@@ -27,3 +27,6 @@ Branch (cành) mac dinh la master
 - git checkout -b {ten branch} project_mobile/{ten branch}
 - merge vao pullrequest tren github
 - xong thi vao code git pull 
+
+- git config --global user.name "Minh Tai"
+- git config --global user.email "taiminh2902@gmail.com"
