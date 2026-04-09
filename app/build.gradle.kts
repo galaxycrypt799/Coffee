@@ -5,9 +5,13 @@ plugins {
 android {
     namespace = "com.example.myapplication"
     compileSdk {
+<<<<<<< HEAD
         version = release(36) {
             minorApiLevel = 1
         }
+=======
+        version = release(36)
+>>>>>>> c8ec1949ce0b89fd329720782a26271703295c4f
     }
 
     defaultConfig {
