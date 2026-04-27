@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class CoffeeProduct {
   final String name;
   final String description;
-  fincd E:\HocAndroid\coffe_appl String picture;
+  final String picture;
   final double price;
   final double discount;
   final String tag;
