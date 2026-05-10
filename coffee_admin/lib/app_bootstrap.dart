@@ -5,9 +5,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:user_repository/user_repository.dart';
 
 import 'firebase_options.dart';
-import 'src/modules/operations/views/firebase_order_repo.dart';
-import 'src/modules/operations/views/local_order_repo.dart';
-import 'src/modules/operations/views/order_repo.dart';
 
 enum BackendMode { firebase, local }
 
@@ -15,7 +12,6 @@ class AppBootstrap {
   const AppBootstrap._({
     required this.userRepository,
     required this.coffeeRepository,
-    required this.orderRepository,
     required this.backendMode,
     required this.statusTitle,
     required this.statusMessage,
@@ -24,7 +20,6 @@ class AppBootstrap {
 
   final UserRepository userRepository;
   final CoffeeRepo coffeeRepository;
-  final OrderRepo orderRepository;
   final BackendMode backendMode;
   final String statusTitle;
   final String statusMessage;
@@ -48,7 +43,6 @@ class AppBootstrap {
       return AppBootstrap._(
         userRepository: FirebaseUserRepo(),
         coffeeRepository: FirebaseCoffeeRepo(),
-        orderRepository: FirebaseOrderRepo(),
         backendMode: BackendMode.firebase,
         statusTitle: 'Online',
         statusMessage:
@@ -76,7 +70,6 @@ class AppBootstrap {
     return AppBootstrap._(
       userRepository: LocalUserRepo(),
       coffeeRepository: const LocalCoffeeRepo(),
-      orderRepository: LocalOrderRepo(),
       backendMode: BackendMode.local,
       statusTitle: 'Offline',
       statusMessage: statusMessage,

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'src/blocs/authentication_bloc/authentication_bloc.dart';
 import 'src/routes/routes.dart';
 
 class MyAppView extends StatelessWidget {
@@ -38,7 +36,7 @@ class MyAppView extends StatelessWidget {
           ),
         ),
       ),
-      routerConfig: router(context.read<AuthenticationBloc>()),
+      routerConfig: router(),
     );
   }
 }

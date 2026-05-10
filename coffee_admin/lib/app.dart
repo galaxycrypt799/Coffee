@@ -6,7 +6,6 @@ import 'package:user_repository/user_repository.dart';
 import 'app_view.dart';
 import 'app_bootstrap.dart';
 import 'src/blocs/authentication_bloc/authentication_bloc.dart';
-import 'src/modules/operations/views/order_repo.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({
@@ -26,9 +25,6 @@ class MyApp extends StatelessWidget {
         ),
         RepositoryProvider<CoffeeRepo>.value(
           value: bootstrap.coffeeRepository,
-        ),
-        RepositoryProvider<OrderRepo>.value(
-          value: bootstrap.orderRepository,
         ),
       ],
       child: BlocProvider(
