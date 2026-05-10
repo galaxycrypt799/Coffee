@@ -145,7 +145,7 @@ git config --global user.name "Ten Cua Ban"
 git config --global user.email "email@example.com"
 
 # Tạo repo trên GitHub → thêm remote
-git remote add origin https://github.com/USERNAME/ten-repo.git
+git remote add origin https://github.com/galaxycrypt799/Mobile.git
 
 # Push code lần đầu
 git branch -M main

@@ -21,7 +21,7 @@ Cả 2 app **chia sẻ cùng 1 Firebase project** và **chia sẻ 2 packages**:
 
 ```bash
 # 1. Clone project
-git clone https://github.com/YOUR_USERNAME/roast-ritual.git
+git clone https://github.com/galaxycrypt799/Mobile.git
 cd roast-ritual
 
 # 2. Setup coffee_app
@@ -370,7 +370,7 @@ Password: Admin@123
 
 2. **Clone Repository**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/roast-ritual.git
+   git clone https://github.com/galaxycrypt799/Mobile.git
    cd roast-ritual
    ```
 

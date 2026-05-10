@@ -70,7 +70,7 @@ git --version
 
 ```bash
 # Clone từ GitHub
-git clone https://github.com/YOUR_USERNAME/roast-ritual.git
+git clone https://github.com/galaxycrypt799/Mobile.git
 cd roast-ritual
 
 # Hoặc nếu đã có folder

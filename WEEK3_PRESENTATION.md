@@ -275,7 +275,7 @@ Xóa feature branch sau merge    git reset --hard rồi push
 **Phần 1: Show GitHub Repository**
 
 ```
-GitHub: github.com/[username]/drinkhub
+GitHub: github.com/galaxycrypt799/Mobile
 
 Cần show:
 ┌─────────────────────────────────────────────────────────┐
