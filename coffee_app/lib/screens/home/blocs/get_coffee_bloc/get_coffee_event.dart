@@ -1,2 +1,8 @@
-// TODO: Implement by team member
-// File: screens\home\blocs\get_coffee_bloc\get_coffee_event.dart
+part of 'get_coffee_bloc.dart';
+
+sealed class GetCoffeeEvent extends Equatable {
+  const GetCoffeeEvent();
+  @override List<Object> get props => [];
+}
+
+class GetCoffeeRequested extends GetCoffeeEvent {}
