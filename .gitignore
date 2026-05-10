@@ -1,0 +1,141 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be committed to version control.
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/extensions.recommendations.json
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# iOS/macOS
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Icon??
+**/ios/**/Icon???
+**/ios/**/Icon????
+**/ios/**/Icon?????
+**/ios/**/Icon??????????
+**/ios/**/Icon?????????????
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/Flutter/Flutter.framework
+**/ios/**/Flutter/Flutter.podspec
+**/ios/**/Flutter/Generated.xcconfig
+**/ios/**/Flutter/ephemeralflutter_assets/
+**/ios/**/Flutter/.last_build_id
+**/ios/**/.noindex
+**/ios/**/*.ipa
+**/ios/**/*.dSYM.zip
+**/ios/**/*.dSYM/
+**/ios/**/Flutter/Flutter.framework/*
+**/ios/**/ios/Flutter/Release/Flutter.framework/
+
+# macOS
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/ephemeralflutter_assets/
+**/macos/Flutter/.last_build_id
+
+# Web
+lib/generated_plugins.dart
+
+# Windows
+windows/flutter/generated_plugins.cmake
+windows/flutter/generated_pluginsc_macros.cmake
+windows/flutter/generated_plugins.dart.h
+windows/flutter/generated_plugins_class_list.cc
+windows/flutter/generated_plugins_class_list.h
+windows/flutter/generated_plugins_class_list_cc.h
+windows/flutter/generated_plugins_class_list_cpp.h
+windows/flutter/generated_plugins.rc
+
+# Coverage
+coverage/
+
+# Exceptions to above rules.
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+!/dev/ci/**/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# Build outputs
+.gradle
+.gradle/
+build/
+buildSrc/build/
+.m2/
+
+# IDE
+.idea/
+.idea_modules/
+*.sw?
+*~
+*.sublime-*
+
+# Android Studio
+captures/
+local.properties
+android/key.properties
+android/release.keystore
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# Environment
+.env
+.env.*.local
+
+# Misc
+.sixth/
+.cursor/
+
+# Ignore pubspec lock files unless explicitly needed
+pubspec.lock
+
+# Archive files
+*.zip
+*.rar
+*.7z
