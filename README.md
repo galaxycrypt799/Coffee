@@ -80,7 +80,7 @@ Coffee/
 ```bash
 # Clone repo
 git clone <repo-url>
-cd drinkhub
+cd Coffee
 
 # Cài dependencies cho cả 2 app
 cd coffee_app && flutter pub get && cd ..
