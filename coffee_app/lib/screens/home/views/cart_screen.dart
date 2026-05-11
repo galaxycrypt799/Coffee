@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+// TODO: Implement by team member
+// File: screens\home\views\cart_screen.dart
+>>>>>>> dev
 // ignore_for_file: prefer_const_constructors
 
 import 'package:coffee_app/components/coffee_image.dart';
