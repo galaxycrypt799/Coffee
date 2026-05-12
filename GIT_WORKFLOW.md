@@ -1,4 +1,4 @@
-# Hướng Dẫn Git - Dự Án DrinkHub
+# Hướng Dẫn Git - Dự Án Coffee App
 
 > Dự án gồm 2 app: **coffee_app** (App khách hàng đặt đồ uống) và **coffee_admin** (App quản trị) — 4 người làm đồng đều trên cả 2 app.
 
