@@ -11,7 +11,7 @@ class SimpleBlocObserver extends BlocObserver {
   @override
   void onEvent(Bloc bloc, Object? event) {
     super.onEvent(bloc, event);
-    log('onEvent -- bloc: ${bloc.runtimeType}, event: $event');
+    log('onEvent -- bloc: ${bloc.runtimeType}, event: ${event.runtimeType}');
   }
 
   @override
@@ -23,7 +23,11 @@ class SimpleBlocObserver extends BlocObserver {
   @override
   void onTransition(Bloc bloc, Transition transition) {
     super.onTransition(bloc, transition);
-    log('onTransition -- bloc: ${bloc.runtimeType}, transition: $transition');
+    log(
+      'onTransition -- bloc: ${bloc.runtimeType}, '
+      'event: ${transition.event.runtimeType}, '
+      'nextState: ${transition.nextState.runtimeType}',
+    );
   }
 
   @override
