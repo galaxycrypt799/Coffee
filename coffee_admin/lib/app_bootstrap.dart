@@ -34,6 +34,14 @@ class AppBootstrap {
 
   static Future<AppBootstrap> initialize() async {
     try {
+      if (!DefaultFirebaseOptions.isConfigured) {
+        return _local(
+          statusMessage:
+              'Firebase chưa được cấu hình cho nền tảng này. Admin đang chạy ở chế độ cục bộ.',
+          warning: 'Missing FirebaseOptions for current platform.',
+        );
+      }
+
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );

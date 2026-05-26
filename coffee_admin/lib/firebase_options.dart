@@ -100,5 +100,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'coffee-system-f7757.firebasestorage.app',
     measurementId: 'G-FHFYPY7FPJ',
   );
-
 }
