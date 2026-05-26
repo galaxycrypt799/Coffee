@@ -1,29 +1,47 @@
-# Person 2 - Minh Toan - Customer UI, Home/Menu/Product
+# Person 2 - Minh Toan - UI khach hang va san pham
 
 Email: minhtoan17022004@icloud.com
-Vai tro: Giao dien khach hang, Home Screen, Menu Screen, Product Detail, responsive UI/UX.
 
-## Ket qua doi chieu GitHub voi workspace hien tai
+## Vai tro
 
-GitHub `main` co cau truc `coffee_app/lib/screens/home/...` nhung nhieu file UI/BLoC van la TODO stub, vi du `coffee_card.dart`, `get_coffee_bloc/*`. Workspace hien tai da co ban day du hon: Home, Menu, Details, Product Detail, coffee image, coffee card, highlight tile, theme va assets coffee.
+Minh Toan phu trach giao dien khach hang va phan quan ly san pham trong admin.
 
-Ket luan: Minh Toan nen lam tiep tren workspace hien tai, sau do PR vao `dev` de dong bo len GitHub. Khong nen viet lai UI tu dau theo GitHub `main` cu.
+Pham vi chinh:
 
-## Branch phu trach
+- Home Screen, Menu Screen, Product Detail.
+- Onboarding va cac widget hien thi do uong.
+- Coffee repository khi can hien thi them thong tin san pham.
+- Admin dashboard layout va man hinh them/sua san pham.
+- Kiem tra responsive tren mobile va web.
+
+## Branch su dung
+
+Branch goc khi lam viec:
 
 ```bash
 git checkout dev
 git pull origin dev
-git checkout -b fix/customer-menu-ui hoac fix/admin-product-management
 ```
 
-## File phu trach chinh
+Branch de sua file UI da co:
+
+```bash
+git checkout -b fix/customer-menu-ui
+```
+
+Branch de sua phan san pham admin:
+
+```bash
+git checkout -b fix/admin-product-management
+```
+
+Neu them man hinh hoac widget moi hoan toan thi dung `feature/...`.
+
+## File phu trach
 
 ### coffee_app
 
-- `lib/screens/home/blocs/get_coffee_bloc/get_coffee_bloc.dart`
-- `lib/screens/home/blocs/get_coffee_bloc/get_coffee_event.dart`
-- `lib/screens/home/blocs/get_coffee_bloc/get_coffee_state.dart`
+- `lib/screens/home/blocs/get_coffee_bloc/*`
 - `lib/screens/home/views/home_screen.dart`
 - `lib/screens/home/views/menu_screen.dart`
 - `lib/screens/home/views/details_screen.dart`
@@ -32,68 +50,37 @@ git checkout -b fix/customer-menu-ui hoac fix/admin-product-management
 - `lib/screens/home/widgets/brew_highlight_tile.dart`
 - `lib/components/coffee_image.dart`
 - `lib/screens/onboarding/views/onboarding_screen.dart`
+- `lib/theme/app_theme.dart`
 - `assets/coffee/*`
 - `assets/branding/*`
+- `assets/fonts/*`
+- `packages/coffee_repository/*` khi lien quan UI san pham
 
-### coffee_admin phan lien quan UI san pham
+### coffee_admin
 
 - `lib/src/modules/base/views/base_screen.dart`
 - `lib/src/modules/home/views/home_screen.dart`
 - `lib/src/modules/operations/views/create_coffee_screen.dart`
 - `lib/src/modules/operations/blocs/create_coffee_bloc/*`
+- `packages/coffee_repository/*`
 
-## Viec can lam tiep
+## Commit mau
 
-- [ ] Kiem tra lai Home/Menu tren mobile nho, tablet, web.
-- [ ] Dam bao text khong tran trong card, chip, nut, bottom navigation.
-- [ ] Chuan hoa CoffeeCard dung chung giua Home va Menu neu hop ly.
-- [ ] Hoan thien empty/loading/error UI cho menu.
-- [ ] Toi uu anh san pham: kich thuoc co dinh, `cacheWidth/cacheHeight` khi can.
-- [ ] Kiem tra Product Detail co nut them vao gio va chuyen sang Cart dung state cua Person 3.
-- [ ] Lam UI admin dashboard khop so lieu RevenueBloc cua Person 4.
-- [ ] Viet widget test co fake coffee list cho Home/Menu/Product Detail.
+- `Update customer coffee repository data model`
+- `Implement coffee loading bloc for menu screen`
+- `Update customer theme onboarding and coffee image widget`
+- `Update reusable coffee display widgets`
+- `Update customer home menu and product detail screens`
+- `Update admin base layout and dashboard screen`
+- `Implement create coffee management bloc`
+- `Update create coffee management screen`
 
-## Commit plan theo file
+## Checklist truoc khi push
 
-| File/Pham vi | Commit message |
-|---|---|
-| `get_coffee_bloc/*` | `feat(menu): implement coffee loading bloc` |
-| `home_screen.dart` | `feat(home): polish customer home sections` |
-| `menu_screen.dart` | `feat(menu): improve search and category filters` |
-| `details_screen.dart`, `product_detail_screen.dart` | `feat(product): complete drink detail experience` |
-| `coffee_card.dart`, `brew_highlight_tile.dart` | `feat(home): add reusable coffee display widgets` |
-| `coffee_image.dart` | `perf(images): optimize coffee image rendering` |
-| `onboarding_screen.dart` | `style(onboarding): align onboarding with coffee branding` |
-| `create_coffee_screen.dart` | `style(admin): improve product management layout` |
-| UI overflow fixes | `fix(ui): prevent layout overflow on small screens` |
-| widget tests | `test(menu): add customer menu rendering tests` |
-
-## Quy tac phoi hop
-
-- Khong sua logic tinh tien/gio hang trong pham vi Person 3 neu khong can.
-- Neu can them field trong `Coffee`, bao Minh Tai va Person 3 vi anh huong repository va cart item.
-- Neu thay doi route/tab trong `main_screen.dart`, thong bao Person 3 vi file nay dung chung voi bottom navigation/cart/order.
-
-## Lenh lam viec
-
-```bash
-git checkout dev
-git pull origin dev
-git checkout -b fix/customer-menu-ui hoac fix/admin-product-management
-
-flutter analyze
-flutter test
-
-git add coffee_app/lib/screens/home coffee_app/lib/components/coffee_image.dart
-git commit -m "feat(menu): improve search and category filters"
-git push -u origin fix/customer-menu-ui hoac fix/admin-product-management
-```
-
-## Checklist truoc PR
-
-- [ ] UI dung mau/theme chung, khong them palette lech tong.
-- [ ] List dung builder/sliver khi co nhieu item.
-- [ ] Anh co fallback khi loi.
-- [ ] Search/filter khong crash voi chu rong.
-- [ ] Khong hardcode du lieu neu repository da co.
-- [ ] Co screenshot demo cho Home/Menu/Product Detail trong mo ta PR.
+- [ ] Man hinh khong bi overflow tren mobile nho.
+- [ ] Anh san pham co fallback khi duong dan loi.
+- [ ] Search/filter menu khong crash voi chuoi rong.
+- [ ] Product Detail them duoc mon vao gio hang cua Person 3.
+- [ ] Mau sac va font dung theme chung.
+- [ ] Admin create coffee co loading, success va error state.
+- [ ] Neu sua model `Coffee`, bao Minh Tai va Kim Ngan de kiem tra cart.
