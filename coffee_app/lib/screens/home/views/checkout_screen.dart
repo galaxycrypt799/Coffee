@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:coffee_app/screens/home/blocs/cart_bloc/cart_bloc.dart';
+import 'package:coffee_app/screens/home/views/main_screen.dart';
 import 'package:coffee_app/screens/orders/cubit/order_history_cubit.dart';
 import 'package:coffee_app/blocs/authentication_bloc/authentication_bloc.dart';
 import 'package:coffee_app/utils/price_formatter.dart' as pf;
@@ -52,244 +53,269 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         builder: (context, orderState) {
           return BlocBuilder<CartBloc, CartState>(
             builder: (context, state) {
-          final cart = (state is CartLoaded)
-              ? state.cart
-              : (state is CartUpdated)
+              final cart = (state is CartLoaded)
                   ? state.cart
-                  : null;
+                  : (state is CartUpdated)
+                      ? state.cart
+                      : null;
 
-          if (cart == null || cart.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.shopping_cart_outlined, size: 56),
-                  const SizedBox(height: 16),
-                  const Text('Giỏ hàng trống'),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Quay lại'),
+              if (cart == null || cart.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.shopping_cart_outlined, size: 56),
+                      const SizedBox(height: 16),
+                      const Text('Giỏ hàng trống'),
+                      const SizedBox(height: 24),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Quay lại'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          }
+                );
+              }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Địa chỉ giao hàng
-                _buildSectionTitle(context, 'Địa chỉ giao hàng'),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _nameController,
-                  hintText: 'Họ và tên',
-                  icon: Icons.person,
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  controller: _phoneController,
-                  hintText: 'Số điện thoại',
-                  icon: Icons.phone,
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  controller: _addressController,
-                  hintText: 'Địa chỉ giao hàng',
-                  icon: Icons.location_on,
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 24),
-
-                // Tùy chọn giao hàng
-                _buildSectionTitle(context, 'Hình thức giao hàng'),
-                const SizedBox(height: 12),
-                _buildDeliveryOption('delivery', 'Giao hàng', 'Giao tận nơi trong 30-45 phút'),
-                const SizedBox(height: 8),
-                _buildDeliveryOption('pickup', 'Lấy tại quán', 'Lấy tại quán trong 15 phút'),
-                const SizedBox(height: 24),
-
-                // Phương thức thanh toán
-                _buildSectionTitle(context, 'Phương thức thanh toán'),
-                const SizedBox(height: 12),
-                _buildPaymentMethod('cash', 'Thanh toán tiền mặt', Icons.money),
-                const SizedBox(height: 8),
-                _buildPaymentMethod('card', 'Thanh toán bằng thẻ', Icons.credit_card),
-                const SizedBox(height: 8),
-                _buildPaymentMethod('online', 'Chuyển khoản ngân hàng', Icons.account_balance),
-                const SizedBox(height: 24),
-
-                // Ghi chú đơn hàng
-                _buildSectionTitle(context, 'Ghi chú cho cửa hàng'),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  controller: _notesController,
-                  hintText: 'Ghi chú (ví dụ: không đường, ít lạnh...)',
-                  icon: Icons.note,
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 24),
-
-                // Đơn hàng của bạn
-                _buildSectionTitle(context, 'Đơn hàng của bạn'),
-                const SizedBox(height: 12),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        ...cart.items.map((item) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    '${item.name} x${item.quantity}',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Text(pf.formatPrice(item.subtotal)),
-                              ],
-                            ),
-                          );
-                        }),
-                        Divider(color: Colors.grey[300]),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Tạm tính:',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              Text(pf.formatPrice(cart.totalPrice)),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Phí vận chuyển:',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            Text(pf.formatPrice(_selectedDeliveryOption == 'pickup' ? 0 : 20000)),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Divider(color: Colors.grey[300]),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Tổng cộng:',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              Text(
-                                pf.formatPrice(
-                                  cart.totalPrice +
-                                      (_selectedDeliveryOption == 'pickup' ? 0 : 20000),
-                                ),
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      color: Colors.brown[700],
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Địa chỉ giao hàng
+                    _buildSectionTitle(context, 'Địa chỉ giao hàng'),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _nameController,
+                      hintText: 'Họ và tên',
+                      icon: Icons.person,
                     ),
-                  ),
-                ),
-                const SizedBox(height: 24),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      controller: _phoneController,
+                      hintText: 'Số điện thoại',
+                      icon: Icons.phone,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      controller: _addressController,
+                      hintText: 'Địa chỉ giao hàng',
+                      icon: Icons.location_on,
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 24),
 
-                // Nút thanh toán
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: FilledButton(
-                    onPressed: orderState.isSubmitting
-                        ? null
-                        : () async {
-                            if (!_validateForm()) {
-                              return;
-                            }
+                    // Tùy chọn giao hàng
+                    _buildSectionTitle(context, 'Hình thức giao hàng'),
+                    const SizedBox(height: 12),
+                    _buildDeliveryOption('delivery', 'Giao hàng',
+                        'Giao tận nơi trong 30-45 phút'),
+                    const SizedBox(height: 8),
+                    _buildDeliveryOption(
+                        'pickup', 'Lấy tại quán', 'Lấy tại quán trong 15 phút'),
+                    const SizedBox(height: 24),
 
-                            final user = context
-                                .read<AuthenticationBloc>()
-                                .state
-                                .user;
-                            if (user == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Không tìm thấy tài khoản đăng nhập.',
-                                  ),
+                    // Phương thức thanh toán
+                    _buildSectionTitle(context, 'Phương thức thanh toán'),
+                    const SizedBox(height: 12),
+                    _buildPaymentMethod(
+                        'cash', 'Thanh toán tiền mặt', Icons.money),
+                    const SizedBox(height: 8),
+                    _buildPaymentMethod(
+                        'card', 'Thanh toán bằng thẻ', Icons.credit_card),
+                    const SizedBox(height: 8),
+                    _buildPaymentMethod('online', 'Chuyển khoản ngân hàng',
+                        Icons.account_balance),
+                    const SizedBox(height: 24),
+
+                    // Ghi chú đơn hàng
+                    _buildSectionTitle(context, 'Ghi chú cho cửa hàng'),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      controller: _notesController,
+                      hintText: 'Ghi chú (ví dụ: không đường, ít lạnh...)',
+                      icon: Icons.note,
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Đơn hàng của bạn
+                    _buildSectionTitle(context, 'Đơn hàng của bạn'),
+                    const SizedBox(height: 12),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          children: [
+                            ...cart.items.map((item) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${item.name} x${item.quantity}',
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Text(pf.formatPrice(item.subtotal)),
+                                  ],
                                 ),
                               );
-                              return;
-                            }
+                            }),
+                            Divider(color: Colors.grey[300]),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Tạm tính:',
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                  Text(pf.formatPrice(cart.totalPrice)),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Phí vận chuyển:',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                Text(pf.formatPrice(
+                                    _selectedDeliveryOption == 'pickup'
+                                        ? 0
+                                        : 20000)),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Divider(color: Colors.grey[300]),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Tổng cộng:',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  Text(
+                                    pf.formatPrice(
+                                      cart.totalPrice +
+                                          (_selectedDeliveryOption == 'pickup'
+                                              ? 0
+                                              : 20000),
+                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: Colors.brown[700],
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                            final shippingFee =
-                                _selectedDeliveryOption == 'pickup'
-                                    ? 0
-                                    : 20000;
+                    // Nút thanh toán
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: FilledButton(
+                        onPressed: orderState.isSubmitting
+                            ? null
+                            : () async {
+                                if (!_validateForm()) {
+                                  return;
+                                }
 
-                            final isSuccess = await context
-                                .read<OrderHistoryCubit>()
-                                .placeOrder(
-                                  user: user,
-                                  cart: cart,
-                                  customerName: _nameController.text.trim(),
-                                  customerPhone: _phoneController.text.trim(),
-                                  totalPrice: cart.totalPrice + shippingFee,
-                                  paymentMethod: _selectedPaymentMethod,
-                                  deliveryAddress: _selectedDeliveryOption ==
-                                          'pickup'
-                                      ? 'Pickup tại quầy'
-                                      : _addressController.text.trim(),
-                                  notes: _notesController.text.trim().isEmpty
-                                      ? null
-                                      : _notesController.text.trim(),
-                                  userRepository: context.read<UserRepository>(),
+                                final user = context
+                                    .read<AuthenticationBloc>()
+                                    .state
+                                    .user;
+                                if (user == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Không tìm thấy tài khoản đăng nhập.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final shippingFee =
+                                    _selectedDeliveryOption == 'pickup'
+                                        ? 0
+                                        : 20000;
+
+                                final isSuccess = await context
+                                    .read<OrderHistoryCubit>()
+                                    .placeOrder(
+                                      user: user,
+                                      cart: cart,
+                                      customerName: _nameController.text.trim(),
+                                      customerPhone:
+                                          _phoneController.text.trim(),
+                                      totalPrice: cart.totalPrice + shippingFee,
+                                      paymentMethod: _selectedPaymentMethod,
+                                      deliveryAddress:
+                                          _selectedDeliveryOption == 'pickup'
+                                              ? 'Pickup tại quầy'
+                                              : _addressController.text.trim(),
+                                      notes:
+                                          _notesController.text.trim().isEmpty
+                                              ? null
+                                              : _notesController.text.trim(),
+                                      userRepository:
+                                          context.read<UserRepository>(),
+                                    );
+
+                                if (!context.mounted || !isSuccess) {
+                                  return;
+                                }
+
+                                _showSuccessDialog(
+                                  context,
+                                  cart,
+                                  cart.totalPrice + shippingFee,
                                 );
-
-                            if (!context.mounted || !isSuccess) {
-                              return;
-                            }
-
-                            _showSuccessDialog(
-                              context,
-                              cart,
-                              cart.totalPrice + shippingFee,
-                            );
-                          },
-                    child: orderState.isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Xác nhận đơn hàng'),
-                  ),
+                              },
+                        child: orderState.isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Text('Xác nhận đơn hàng'),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 ),
-                const SizedBox(height: 12),
-              ],
-            ),
-          );
-        },
+              );
+            },
           );
         },
       ),
@@ -304,7 +330,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return false;
     }
 
-    if (_selectedDeliveryOption != 'pickup' && _addressController.text.isEmpty) {
+    if (_selectedDeliveryOption != 'pickup' &&
+        _addressController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập địa chỉ giao hàng')),
       );
@@ -321,14 +348,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return true;
   }
 
-  void _showSuccessDialog(BuildContext context, dynamic cart, double totalPrice) {
+  void _showSuccessDialog(
+      BuildContext context, dynamic cart, double totalPrice) {
     final cartBloc = context.read<CartBloc>();
     final navigator = Navigator.of(context);
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Đặt hàng thành công!'),
           content: Column(
@@ -364,10 +392,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             TextButton(
               onPressed: () {
                 cartBloc.add(const ClearCartEvent());
-                navigator.pop(); // Close dialog
+                Navigator.of(dialogContext, rootNavigator: true).pop();
                 navigator.pushNamedAndRemoveUntil(
-                  '/orders',
-                  (route) => route.settings.name == '/',
+                  '/',
+                  (route) => false,
+                  arguments: MainScreen.activityTabIndex,
                 );
               },
               child: const Text('Xem lịch sử đơn'),
