@@ -25,16 +25,18 @@ class CartScreen extends StatelessWidget {
           if (state is CartLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (state is CartLoaded) {
             if (state.items.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey.shade400),
+                    Icon(Icons.shopping_cart_outlined,
+                        size: 64, color: Colors.grey.shade400),
                     const SizedBox(height: 16),
-                    const Text("Giỏ hàng đang trống", style: TextStyle(fontSize: 18, color: Colors.grey)),
+                    const Text("Giỏ hàng đang trống",
+                        style: TextStyle(fontSize: 18, color: Colors.grey)),
                   ],
                 ),
               );
@@ -50,7 +52,8 @@ class CartScreen extends StatelessWidget {
                       final item = state.items[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Row(
@@ -59,29 +62,40 @@ class CartScreen extends StatelessWidget {
                                 width: 70,
                                 height: 70,
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(Icons.local_drink, color: Colors.brown),
+                                child: const Icon(Icons.local_drink,
+                                    color: Colors.brown),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                    Text(item.name,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16)),
                                     const SizedBox(height: 4),
                                     Text(
                                       "${formatVnd(item.price)} x ${item.quantity}",
-                                      style: TextStyle(color: Colors.grey.shade600),
+                                      style: TextStyle(
+                                          color: Colors.grey.shade600),
                                     ),
                                   ],
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                icon: const Icon(Icons.delete_outline,
+                                    color: Colors.red),
                                 onPressed: () {
-                                  context.read<CartBloc>().add(CartItemRemoved(item.coffeeId));
+                                  context
+                                      .read<CartBloc>()
+                                      .add(CartItemRemoved(item.coffeeId));
                                 },
                               )
                             ],
@@ -95,7 +109,7 @@ class CartScreen extends StatelessWidget {
               ],
             );
           }
-          
+
           return const Center(child: Text("Đã có lỗi xảy ra"));
         },
       ),
@@ -108,7 +122,10 @@ class CartScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5))
         ],
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -119,14 +136,14 @@ class CartScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Tổng cộng", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                const Text("Tổng cộng",
+                    style: TextStyle(fontSize: 16, color: Colors.grey)),
                 Text(
                   formatVnd(state.totalAmount),
                   style: TextStyle(
-                    fontSize: 20, 
-                    fontWeight: FontWeight.bold, 
-                    color: Theme.of(context).colorScheme.primary
-                  ),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary),
                 ),
               ],
             ),
@@ -158,19 +175,25 @@ class CartScreen extends StatelessWidget {
                       // Sau khi đặt thành công, reset giỏ hàng và về Home
                       context.read<CartBloc>().add(CartStarted());
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Đặt hàng thành công! Đang chờ Admin xác nhận.")),
+                        const SnackBar(
+                            content: Text(
+                                "Đặt hàng thành công! Đang chờ Admin xác nhận.")),
                       );
                       context.go('/home');
                     }
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Lỗi khi đặt hàng, vui lòng thử lại.")),
+                        const SnackBar(
+                            content:
+                                Text("Lỗi khi đặt hàng, vui lòng thử lại.")),
                       );
                     }
                   }
                 },
-                child: const Text("Xác nhận thanh toán", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text("Xác nhận thanh toán",
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
