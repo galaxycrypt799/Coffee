@@ -1,0 +1,73 @@
+# === Miscellaneous ===
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# === IDE / Editor ===
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# === Flutter / Dart ===
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# === Symbolication / Obfuscation ===
+app.*.symbols
+app.*.map.json
+
+# === Android ===
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+**/android/.gradle/
+**/android/.kotlin/
+**/android/build/
+**/android/local.properties
+*.jks
+*.keystore
+
+# === iOS ===
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Runner/GoogleService-Info.plist
+
+# === Firebase / Secrets ===
+**/android/app/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+*.firebaserc
+.env
+.env.*
+
+# === macOS ===
+**/macos/Pods/
+**/macos/Flutter/Flutter.framework
+
+# === Linux / Windows build ===
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
+# === Test coverage ===
+coverage/
+
+# === Generated ===
+*.g.dart
+*.freezed.dart
+*.mocks.dart
