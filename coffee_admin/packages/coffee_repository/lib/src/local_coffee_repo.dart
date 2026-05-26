@@ -33,6 +33,27 @@ class LocalCoffeeRepo implements CoffeeRepo {
   }
 
   @override
+  Future<void> updateCoffee(Coffee coffee) async {
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+
+    final index = _coffeeMenu.indexWhere(
+      (existingCoffee) => existingCoffee.coffeeId == coffee.coffeeId,
+    );
+    if (index == -1) {
+      _coffeeMenu.insert(0, coffee);
+      return;
+    }
+
+    _coffeeMenu[index] = coffee;
+  }
+
+  @override
+  Future<void> deleteCoffee(String coffeeId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+    _coffeeMenu.removeWhere((coffee) => coffee.coffeeId == coffeeId);
+  }
+
+  @override
   Future<String> uploadCoffeeImage(Uint8List file, String fileName) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     return 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=80';
