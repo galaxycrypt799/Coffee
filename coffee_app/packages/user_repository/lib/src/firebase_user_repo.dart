@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:user_repository/user_repository.dart';
 
 class FirebaseUserRepo implements UserRepository {
@@ -17,28 +18,32 @@ class FirebaseUserRepo implements UserRepository {
 
   @override
   Stream<MyUser?> get user {
-    return _firebaseAuth.authStateChanges().asyncMap((firebaseUser) async {
+    return _firebaseAuth.authStateChanges().switchMap((firebaseUser) {
       if (firebaseUser == null) {
-        return MyUser.empty;
+        return Stream.value(MyUser.empty);
       }
 
-      final snapshot = await _usersCollection.doc(firebaseUser.uid).get();
-      final data = snapshot.data();
-
-      if (data == null) {
-        final fallbackUser = MyUser(
-          userId: firebaseUser.uid,
-          email: firebaseUser.email?.trim().toLowerCase() ?? '',
-          name: firebaseUser.displayName?.trim().isNotEmpty == true
-              ? firebaseUser.displayName!.trim()
-              : 'Coffee Guest',
-          hasActiveCart: false,
+      return _usersCollection.doc(firebaseUser.uid).snapshots().map((snapshot) {
+        final data = snapshot.data();
+        if (data == null) {
+          // If document doesn't exist, we might want to create it or return a fallback
+          return MyUser(
+            userId: firebaseUser.uid,
+            email: firebaseUser.email?.trim().toLowerCase() ?? '',
+            name: firebaseUser.displayName?.trim().isNotEmpty == true
+                ? firebaseUser.displayName!.trim()
+                : 'Coffee Guest',
+            hasActiveCart: false,
+          );
+        }
+        return MyUser.fromEntity(MyUserEntity.fromDocument(data));
+      }).handleError((error, stackTrace) {
+        log(
+          'Error streaming user document',
+          error: error,
+          stackTrace: stackTrace,
         );
-        await setUserData(fallbackUser);
-        return fallbackUser;
-      }
-
-      return MyUser.fromEntity(MyUserEntity.fromDocument(data));
+      });
     });
   }
 
@@ -87,6 +92,34 @@ class FirebaseUserRepo implements UserRepository {
     } catch (error, stackTrace) {
       log('Saving Firebase user data failed',
           error: error, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateUserSpent(String userId, double amount) async {
+    try {
+      final doc = await _usersCollection.doc(userId).get();
+      if (!doc.exists) return;
+
+      final currentSpent = (doc.data()?['totalSpent'] ?? 0).toDouble();
+      final newSpent = currentSpent + amount;
+
+      String newRank = 'bronze';
+      if (newSpent >= 10000000) {
+        newRank = 'platinum';
+      } else if (newSpent >= 3000000) {
+        newRank = 'gold';
+      } else if (newSpent >= 1000000) {
+        newRank = 'silver';
+      }
+
+      await _usersCollection.doc(userId).update({
+        'totalSpent': newSpent,
+        'membershipRank': newRank,
+      });
+    } catch (e) {
+      log('Error updating user spent: $e');
       rethrow;
     }
   }

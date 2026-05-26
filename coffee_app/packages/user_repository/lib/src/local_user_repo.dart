@@ -92,6 +92,43 @@ class LocalUserRepo implements UserRepository {
       _userController.add(_currentUser);
     }
   }
+
+  @override
+  Future<void> updateUserSpent(String userId, double amount) async {
+    final entry = _users.entries.firstWhere(
+      (e) => e.value.user.userId == userId,
+      orElse: () => throw StateError('User not found'),
+    );
+
+    final updatedUser = MyUser(
+      userId: entry.value.user.userId,
+      email: entry.value.user.email,
+      name: entry.value.user.name,
+      hasActiveCart: entry.value.user.hasActiveCart,
+      totalSpent: entry.value.user.totalSpent + amount,
+    );
+
+    // Update rank
+    if (updatedUser.totalSpent >= 10000000) {
+      updatedUser.membershipRank = 'platinum';
+    } else if (updatedUser.totalSpent >= 3000000) {
+      updatedUser.membershipRank = 'gold';
+    } else if (updatedUser.totalSpent >= 1000000) {
+      updatedUser.membershipRank = 'silver';
+    } else {
+      updatedUser.membershipRank = 'bronze';
+    }
+
+    _users[entry.key] = _StoredUser(
+      user: updatedUser,
+      password: entry.value.password,
+    );
+
+    if (_currentUser.userId == userId) {
+      _currentUser = updatedUser;
+      _userController.add(_currentUser);
+    }
+  }
 }
 
 class _StoredUser {

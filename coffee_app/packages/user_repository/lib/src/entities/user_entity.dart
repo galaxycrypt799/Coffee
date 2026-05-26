@@ -3,12 +3,16 @@ class MyUserEntity {
   String email;
   String name;
   bool hasActiveCart;
+  String membershipRank; // bronze, silver, gold, platinum
+  double totalSpent;
 
   MyUserEntity({
     required this.userId,
     required this.email,
     required this.name,
     required this.hasActiveCart,
+    this.membershipRank = 'bronze',
+    this.totalSpent = 0.0,
   });
 
   Map<String, Object?> toDocument() {
@@ -17,6 +21,8 @@ class MyUserEntity {
       'email': email,
       'name': name,
       'hasActiveCart': hasActiveCart,
+      'membershipRank': membershipRank,
+      'totalSpent': totalSpent,
     };
   }
 
@@ -26,6 +32,8 @@ class MyUserEntity {
       email: doc['email'],
       name: doc['name'],
       hasActiveCart: doc['hasActiveCart'],
+      membershipRank: doc['membershipRank'] ?? 'bronze',
+      totalSpent: (doc['totalSpent'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
