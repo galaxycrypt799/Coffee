@@ -6,8 +6,7 @@ class LocalCoffeeRepo implements CoffeeRepo {
   static List<Coffee> get bundledMenu => List<Coffee>.unmodifiable(_coffeeMenu);
 
   @override
-  Future<List<Coffee>> getCoffees() async {
-    await Future<void>.delayed(const Duration(milliseconds: 350));
+  Future<List<Coffee>> getCoffees({bool forceRefresh = false}) async {
     return bundledMenu;
   }
 }
@@ -23,7 +22,7 @@ final List<Coffee> _coffeeMenu = <Coffee>[
         'Ly phin chủ lực với nền Robusta Việt Nam, sữa đặc cân bằng và lớp kem sữa nhẹ, giữ chất cà phê rõ ràng nhưng vẫn mềm và dễ uống.',
     category: 'Phin Việt',
     origin: 'Cầu Đất x Đắk Lắk',
-    roastLevel: 'Đậm vừa',
+    caffeineLevel: 'Cao',
     intensity: 4,
     brewMinutes: 5,
     volumeMl: 320,
@@ -48,7 +47,7 @@ final List<Coffee> _coffeeMenu = <Coffee>[
         'Mocha đá xay dành cho những khách muốn vị ngọt gọn gàng. Nền espresso được giữ lại để cốc vẫn ra chất cà phê thay vì chỉ như món tráng miệng.',
     category: 'Đá Xay',
     origin: 'Đà Lạt Arabica',
-    roastLevel: 'Đậm',
+    caffeineLevel: 'Vừa',
     intensity: 4,
     brewMinutes: 5,
     volumeMl: 360,
@@ -73,7 +72,7 @@ final List<Coffee> _coffeeMenu = <Coffee>[
         'Cold brew ngâm lạnh được làm sáng vị với cam vàng, giữ độ êm và ít chua. Hương vị hợp với khách thích món tinh tế, nhanh gọn và dễ uống suốt ngày.',
     category: 'Cold Brew',
     origin: 'Lâm Đồng Arabica',
-    roastLevel: 'Nhẹ vừa',
+    caffeineLevel: 'Vừa',
     intensity: 3,
     brewMinutes: 6,
     volumeMl: 320,
@@ -98,7 +97,7 @@ final List<Coffee> _coffeeMenu = <Coffee>[
         'Ly signature theo hướng hiện đại, kết hợp espresso rang đậm với sữa dừa và đá lắc. Tổng thể mát, thơm, có độ béo vừa đủ và rất hợp cho bữa sáng.',
     category: 'Đá Signature',
     origin: 'Đắk Lắk Robusta',
-    roastLevel: 'Đậm vừa',
+    caffeineLevel: 'Cao',
     intensity: 4,
     brewMinutes: 3,
     volumeMl: 280,
@@ -123,7 +122,7 @@ final List<Coffee> _coffeeMenu = <Coffee>[
         'Cold brew truyền thống được ngâm chậm để giữ vị sạch, ít gắt và vẫn đầy năng lượng. Ly này phù hợp cho khách thích cà phê đen theo cách hiện đại hơn.',
     category: 'Cold Brew',
     origin: 'Kenya AA',
-    roastLevel: 'Vừa',
+    caffeineLevel: 'Vừa',
     intensity: 5,
     brewMinutes: 8,
     volumeMl: 330,
