@@ -52,6 +52,7 @@ class CoffeeEntity {
       'category': category,
       'origin': origin,
       'roastLevel': roastLevel,
+      'caffeineLevel': roastLevel,
       'intensity': intensity,
       'brewMinutes': brewMinutes,
       'volumeMl': volumeMl,
@@ -64,25 +65,36 @@ class CoffeeEntity {
   }
 
   static CoffeeEntity fromDocument(Map<String, dynamic> doc) {
+    final rawTastingNotes = doc['tastingNotes'];
+    final rawMacros = doc['macros'];
+
     return CoffeeEntity(
-      sortOrder: doc['sortOrder'] as int? ?? 0,
-      coffeeId: doc['coffeeId'] as String,
-      picture: doc['picture'] as String,
-      name: doc['name'] as String,
-      tagline: doc['tagline'] as String,
-      description: doc['description'] as String,
-      category: doc['category'] as String,
-      origin: doc['origin'] as String,
-      roastLevel: doc['roastLevel'] as String,
-      intensity: doc['intensity'] as int,
-      brewMinutes: doc['brewMinutes'] as int,
-      volumeMl: doc['volumeMl'] as int,
-      rating: (doc['rating'] as num).toDouble(),
-      price: (doc['price'] as num).toDouble(),
-      discount: doc['discount'] as int,
-      tastingNotes: List<String>.from(doc['tastingNotes'] as List<dynamic>),
+      sortOrder: (doc['sortOrder'] as num?)?.toInt() ?? 0,
+      coffeeId: doc['coffeeId'] as String? ?? '',
+      picture: doc['picture'] as String? ?? doc['imageUrl'] as String? ?? '',
+      name: doc['name'] as String? ?? 'Coffee',
+      tagline: doc['tagline'] as String? ?? '',
+      description: doc['description'] as String? ?? '',
+      category: doc['category'] as String? ?? 'Signature',
+      origin: doc['origin'] as String? ?? '',
+      roastLevel: doc['roastLevel'] as String? ??
+          doc['caffeineLevel'] as String? ??
+          'Vừa',
+      intensity: (doc['intensity'] as num?)?.toInt() ?? 3,
+      brewMinutes: (doc['brewMinutes'] as num?)?.toInt() ?? 4,
+      volumeMl: (doc['volumeMl'] as num?)?.toInt() ?? 0,
+      rating: (doc['rating'] as num?)?.toDouble() ?? 4.5,
+      price: (doc['price'] as num?)?.toDouble() ?? 0,
+      discount: (doc['discount'] as num?)?.toInt() ?? 0,
+      tastingNotes: rawTastingNotes is List
+          ? rawTastingNotes.whereType<String>().toList(growable: false)
+          : const <String>[],
       macros: Macros.fromEntity(
-        MacrosEntity.fromDocument(doc['macros'] as Map<String, dynamic>),
+        MacrosEntity.fromDocument(
+          rawMacros is Map
+              ? Map<String, dynamic>.from(rawMacros)
+              : <String, dynamic>{},
+        ),
       ),
     );
   }

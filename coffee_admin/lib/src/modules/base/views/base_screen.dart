@@ -21,7 +21,7 @@ class _BaseScreenState extends State<BaseScreen> {
     ),
     _NavItem(
       label: 'Products',
-      route: '/create',
+      route: '/products',
       icon: CupertinoIcons.cube_box_fill,
     ),
     _NavItem(
@@ -39,7 +39,9 @@ class _BaseScreenState extends State<BaseScreen> {
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/create')) return 1;
+    if (location.startsWith('/products') || location.startsWith('/create')) {
+      return 1;
+    }
     if (location.startsWith('/orders')) return 2;
     if (location.startsWith('/profile')) return 3;
     return 0;

@@ -10,9 +10,9 @@ class FirebaseCoffeeRepo implements CoffeeRepo {
     FirebaseFirestore? firestore,
     FirebaseStorage? storage,
     this.seedIfEmpty = true,
-  }) : _coffeeCollection =
+  })  : _coffeeCollection =
             (firestore ?? FirebaseFirestore.instance).collection('coffees'),
-       _storage = storage ?? FirebaseStorage.instance;
+        _storage = storage ?? FirebaseStorage.instance;
 
   final CollectionReference<Map<String, dynamic>> _coffeeCollection;
   final FirebaseStorage _storage;
@@ -55,7 +55,29 @@ class FirebaseCoffeeRepo implements CoffeeRepo {
   }
 
   @override
+  Future<void> updateCoffee(Coffee coffee) async {
+    final normalizedCoffee = _normalizeCoffee(coffee);
+    await _coffeeCollection
+        .doc(normalizedCoffee.coffeeId)
+        .set(normalizedCoffee.toEntity().toDocument(), SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> deleteCoffee(String coffeeId) async {
+    final trimmedId = coffeeId.trim();
+    if (trimmedId.isEmpty) {
+      throw ArgumentError('coffeeId is required');
+    }
+
+    await _coffeeCollection.doc(trimmedId).delete();
+  }
+
+  @override
   Future<String> uploadCoffeeImage(Uint8List file, String fileName) async {
+    if (file.isEmpty) {
+      throw ArgumentError('Image file is empty');
+    }
+
     final safeName = _sanitizeFileName(fileName);
     final reference = _storage
         .ref()
@@ -106,11 +128,15 @@ class FirebaseCoffeeRepo implements CoffeeRepo {
   }
 
   String _sanitizeFileName(String value) {
-    final sanitized = value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9._-]+'), '-');
-    return sanitized.isEmpty ? 'coffee.jpg' : sanitized;
+    final sanitized =
+        value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._-]+'), '-');
+    if (sanitized.isEmpty) {
+      return 'coffee.jpg';
+    }
+    if (!sanitized.contains('.')) {
+      return '$sanitized.jpg';
+    }
+    return sanitized;
   }
 
   String _guessContentType(String fileName) {
