@@ -52,7 +52,7 @@ class OrderHistoryScreen extends StatelessWidget {
               final authBloc = context.read<AuthenticationBloc>();
               final userId = authBloc.state.user?.userId ?? '';
               if (userId.isNotEmpty) {
-                await cubit.loadOrders(userId);
+                await cubit.loadOrders(userId, forceRefresh: true);
               }
             },
             child: ListView.separated(

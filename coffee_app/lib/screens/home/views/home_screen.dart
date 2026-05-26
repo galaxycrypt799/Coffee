@@ -1,10 +1,8 @@
 import 'package:coffee_app/app_bootstrap.dart';
 import 'package:coffee_app/blocs/authentication_bloc/authentication_bloc.dart';
 import 'package:coffee_app/components/coffee_image.dart';
-
 import 'package:coffee_app/screens/home/blocs/get_coffee_bloc/get_coffee_bloc.dart';
 import 'package:coffee_app/screens/home/views/details_screen.dart';
-import 'package:coffee_app/screens/home/widgets/brew_highlight_tile.dart';
 import 'package:coffee_app/screens/home/widgets/coffee_card.dart';
 import 'package:coffee_app/utils/price_formatter.dart';
 import 'package:coffee_repository/coffee_repository.dart';
@@ -14,10 +12,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     required this.bootstrap,
+    this.onOpenMenu,
     super.key,
   });
 
   final AppBootstrap bootstrap;
+  final VoidCallback? onOpenMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +34,7 @@ class HomeScreen extends StatelessWidget {
         child: BlocBuilder<GetCoffeeBloc, GetCoffeeState>(
           builder: (context, state) {
             if (state is GetCoffeeLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (state is GetCoffeeSuccess) {
@@ -44,37 +42,16 @@ class HomeScreen extends StatelessWidget {
                 bootstrap: bootstrap,
                 userName: firstName,
                 coffees: state.coffees,
+                onOpenMenu: onOpenMenu,
               );
             }
 
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.local_drink_outlined, size: 52),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Không tải được thực đơn',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Hãy thử tải lại catalog một lần nữa.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 18),
-                    FilledButton(
-                      onPressed: () {
-                        context.read<GetCoffeeBloc>().add(GetCoffeeRequested());
-                      },
-                      child: const Text('Tải lại menu'),
-                    ),
-                  ],
-                ),
-              ),
+            return _MenuErrorView(
+              onRetry: () {
+                context
+                    .read<GetCoffeeBloc>()
+                    .add(const GetCoffeeRequested(forceRefresh: true));
+              },
             );
           },
         ),
@@ -88,25 +65,32 @@ class _CoffeeHomeBody extends StatelessWidget {
     required this.bootstrap,
     required this.userName,
     required this.coffees,
+    required this.onOpenMenu,
   });
 
   final AppBootstrap bootstrap;
   final String userName;
   final List<Coffee> coffees;
+  final VoidCallback? onOpenMenu;
 
   @override
   Widget build(BuildContext context) {
     final featuredCoffees = coffees.take(3).toList(growable: false);
-    final quickOrderCoffees = coffees.skip(2).toList(growable: false);
+    final popularCoffees = coffees.length > 3
+        ? coffees.skip(3).take(5).toList(growable: false)
+        : coffees.take(5).toList(growable: false);
     final categories = coffees
         .map((coffee) => coffee.category)
+        .where((category) => category.trim().isNotEmpty)
         .toSet()
-        .take(4)
+        .take(5)
         .toList(growable: false);
 
     return RefreshIndicator(
       onRefresh: () async {
-        context.read<GetCoffeeBloc>().add(GetCoffeeRequested());
+        context
+            .read<GetCoffeeBloc>()
+            .add(const GetCoffeeRequested(forceRefresh: true));
         await Future<void>.delayed(const Duration(milliseconds: 450));
       },
       child: CustomScrollView(
@@ -123,31 +107,22 @@ class _CoffeeHomeBody extends StatelessWidget {
                     userName: userName,
                     backendLabel: bootstrap.statusTitle,
                   ),
+                  const SizedBox(height: 18),
+                  _HeroPanel(
+                    onOrderNow: onOpenMenu,
+                    usesFirebase: bootstrap.usesFirebase,
+                  ),
                   const SizedBox(height: 20),
-                  _LoyaltyBanner(bootstrap: bootstrap),
+                  _CategoryStrip(categories: categories),
                   const SizedBox(height: 24),
-                  const _SectionHeader(
-                    title: 'Danh mục đồ uống',
-                    subtitle:
-                        'Khám phá thực đơn đa dạng từ cà phê, trà, sinh tố đến nước ép.',
+                  _SectionHeader(
+                    title: 'Gợi ý hôm nay',
+                    actionLabel: 'Xem menu',
+                    onAction: onOpenMenu,
                   ),
                   const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: categories
-                        .map((category) => _CategoryChip(label: category))
-                        .toList(growable: false),
-                  ),
-                  const SizedBox(height: 26),
-                  const _SectionHeader(
-                    title: 'Gợi ý hôm nay',
-                    subtitle:
-                        'Thức uống nổi bật, ưu đãi hấp dẫn, đặt nhanh chóng.',
-                  ),
-                  const SizedBox(height: 16),
                   SizedBox(
-                    height: 312,
+                    height: 304,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
@@ -162,41 +137,10 @@ class _CoffeeHomeBody extends StatelessWidget {
                       },
                     ),
                   ),
-                  const SizedBox(height: 26),
-                  const _SectionHeader(
-                    title: 'Tiện ích nhanh',
-                    subtitle:
-                        'Ưu đãi thành viên, đặt trước, tìm cửa hàng gần nhất.',
-                  ),
-                  const SizedBox(height: 14),
-                  const Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      BrewHighlightTile(
-                        title: 'Ưu đãi thành viên',
-                        subtitle: 'Theo dõi hạng, quà và mã giảm giá gần nhất.',
-                        icon: Icons.workspace_premium_outlined,
-                      ),
-                      BrewHighlightTile(
-                        title: 'Đặt trước 10 phút',
-                        subtitle: 'Chọn món xong là có thể ghé lấy tại quầy.',
-                        icon: Icons.shopping_bag_outlined,
-                      ),
-                      BrewHighlightTile(
-                        title: 'Tìm cửa hàng',
-                        subtitle: 'Cách sử dụng tiện lợi.',
-                        icon: Icons.storefront_outlined,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 26),
-                  const _SectionHeader(
-                    title: 'Đồ uống phổ biến',
-                    subtitle: 'Thức uống được yêu thích nhất, dễ dàng đặt lại.',
-                  ),
-                  const SizedBox(height: 14),
-                  ...quickOrderCoffees.map(
+                  const SizedBox(height: 24),
+                  const _SectionHeader(title: 'Món phổ biến'),
+                  const SizedBox(height: 12),
+                  ...popularCoffees.map(
                     (coffee) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _CoffeeListTile(
@@ -241,57 +185,49 @@ class _TopBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Xin chào, $userName',
+                'Chào $userName',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
-                'Thực đơn đồ uống đa dạng, đặt món siêu nhanh.',
+                'Chọn món nhanh, theo dõi đơn dễ dàng.',
                 style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: const Color(0xFFE7D3BD)),
-                ),
-                child: Text(
-                  backendLabel,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 12),
+        _StatusPill(label: backendLabel),
+        const SizedBox(width: 10),
         _TopBarAction(
           icon: Icons.shopping_cart_outlined,
-          onTap: () {
-            Navigator.of(context).pushNamed('/cart');
-          },
-        ),
-        const SizedBox(width: 10),
-        _TopBarAction(
-          icon: Icons.person_outline_rounded,
-          onTap: () {
-            Navigator.of(context).pushNamed('/profile');
-          },
-        ),
-        const SizedBox(width: 10),
-        _TopBarAction(
-          icon: Icons.logout_rounded,
-          onTap: () {
-            context
-                .read<AuthenticationBloc>()
-                .add(const AuthenticationLogoutRequested());
-          },
+          tooltip: 'Giỏ hàng',
+          onTap: () => Navigator.of(context).pushNamed('/cart'),
         ),
       ],
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFE7D3BD)),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+      ),
     );
   }
 }
@@ -299,192 +235,142 @@ class _TopBar extends StatelessWidget {
 class _TopBarAction extends StatelessWidget {
   const _TopBarAction({
     required this.icon,
+    required this.tooltip,
     required this.onTap,
   });
 
   final IconData icon;
+  final String tooltip;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE7D4C0)),
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE7D4C0)),
+          ),
+          child: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
         ),
-        child: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
       ),
     );
   }
 }
 
-class _LoyaltyBanner extends StatelessWidget {
-  const _LoyaltyBanner({
-    required this.bootstrap,
+class _HeroPanel extends StatelessWidget {
+  const _HeroPanel({
+    required this.onOrderNow,
+    required this.usesFirebase,
   });
 
-  final AppBootstrap bootstrap;
+  final VoidCallback? onOrderNow;
+  final bool usesFirebase;
 
   @override
   Widget build(BuildContext context) {
+    final imageCacheHeight =
+        (246 * MediaQuery.devicePixelRatioOf(context)).round();
+
     return Container(
-      width: double.infinity,
+      height: 246,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Stack(
+        fit: StackFit.expand,
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/coffee/hero_shop.jpg',
-              fit: BoxFit.cover,
-            ),
+          Image.asset(
+            'assets/coffee/hero_shop.jpg',
+            fit: BoxFit.cover,
+            cacheHeight: imageCacheHeight,
+            filterQuality: FilterQuality.low,
           ),
-          Container(
-            padding: const EdgeInsets.all(22),
-            decoration: const BoxDecoration(
+          const DecoratedBox(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: <Color>[
-                  Color(0x4423120D),
-                  Color(0xCC25140F),
-                  Color(0xFF25140F),
+                colors: [
+                  Color(0x2223120D),
+                  Color(0xB525140F),
+                  Color(0xF225140F),
                 ],
               ),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(22),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1)),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        usesFirebase
+                            ? Icons.cloud_done_rounded
+                            : Icons.layers_rounded,
+                        color: Colors.white,
+                        size: 16,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.stars_rounded,
-                              color: Colors.amber, size: 16),
-                          const SizedBox(width: 6),
-                          Builder(
-                            builder: (context) {
-                              final user = context.select(
-                                  (AuthenticationBloc bloc) => bloc.state.user);
-                              final rank = _getRankName((user?.totalSpent ?? 0.0).toDouble());
-                              return Text(
-                                'Thành viên $rank',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                              );
-                            },
-                          ),
-                        ],
+                      const SizedBox(width: 7),
+                      Text(
+                        usesFirebase ? 'Menu online' : 'Menu offline',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
                       ),
-                    ),
-                    Icon(
-                      bootstrap.usesFirebase
-                          ? Icons.cloud_done_rounded
-                          : Icons.layers_rounded,
-                      color: Colors.white.withValues(alpha: 0.5),
-                      size: 20,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 24),
+                const Spacer(),
                 Text(
-                  'Ưu đãi rõ hơn,\nđặt món nhanh hơn.',
+                  'Cà phê ngon,\nđặt trong vài chạm.',
                   style: Theme.of(context).textTheme.displaySmall?.copyWith(
                         color: Colors.white,
-                        height: 1.05,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w800,
+                        height: 1.04,
                       ),
                 ),
-                const SizedBox(height: 16),
-                Builder(
-                  builder: (context) {
-                    final user = context.select(
-                        (AuthenticationBloc bloc) => bloc.state.user);
-                    final double totalSpent = user?.totalSpent ?? 0.0;
-                    final nextRankData = _getNextRankData(totalSpent);
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Chi tiêu: ${formatVnd(totalSpent)}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.9),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            Text(
-                              'Mục tiêu: ${formatVnd(nextRankData.targetAmount)}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                  ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: LinearProgressIndicator(
-                            value: nextRankData.progress,
-                            minHeight: 8,
-                            backgroundColor: Colors.white.withValues(alpha: 0.2),
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                                Colors.amber),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          nextRankData.message,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    fontSize: 11,
-                                  ),
-                        ),
-                      ],
-                    );
-                  },
+                const SizedBox(height: 14),
+                FilledButton.icon(
+                  onPressed: onOrderNow,
+                  icon: const Icon(Icons.local_cafe_rounded),
+                  label: const Text('Đặt món ngay'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF2C1B16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 13,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -495,50 +381,41 @@ class _LoyaltyBanner extends StatelessWidget {
   }
 }
 
-String _getRankName(double totalSpent) {
-  if (totalSpent < 1000000) return 'Đồng';
-  if (totalSpent < 3000000) return 'Bạc';
-  if (totalSpent < 10000000) return 'Vàng';
-  return 'Kim cương';
-}
+class _CategoryStrip extends StatelessWidget {
+  const _CategoryStrip({required this.categories});
 
-class _NextRankData {
-  final double targetAmount;
-  final double progress;
-  final String message;
+  final List<String> categories;
 
-  _NextRankData({
-    required this.targetAmount,
-    required this.progress,
-    required this.message,
-  });
-}
+  @override
+  Widget build(BuildContext context) {
+    if (categories.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-_NextRankData _getNextRankData(double totalSpent) {
-  final double currentTotal = totalSpent.toDouble();
-  if (currentTotal < 1000000) {
-    return _NextRankData(
-      targetAmount: 1000000,
-      progress: currentTotal / 1000000,
-      message: 'Còn ${formatVnd(1000000 - currentTotal)} để lên hạng Bạc',
-    );
-  } else if (currentTotal < 3000000) {
-    return _NextRankData(
-      targetAmount: 3000000,
-      progress: (currentTotal - 1000000) / (3000000 - 1000000),
-      message: 'Còn ${formatVnd(3000000 - currentTotal)} để lên hạng Vàng',
-    );
-  } else if (currentTotal < 10000000) {
-    return _NextRankData(
-      targetAmount: 10000000,
-      progress: (currentTotal - 3000000) / (10000000 - 3000000),
-      message: 'Còn ${formatVnd(10000000 - currentTotal)} để lên hạng Kim cương',
-    );
-  } else {
-    return _NextRankData(
-      targetAmount: currentTotal,
-      progress: 1.0,
-      message: 'Bạn đã đạt hạng cao nhất!',
+    return SizedBox(
+      height: 42,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: categories.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: const Color(0xFFE7D3BD)),
+            ),
+            child: Text(
+              categories[index],
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -546,53 +423,30 @@ _NextRankData _getNextRankData(double totalSpent) {
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     required this.title,
-    required this.subtitle,
+    this.actionLabel,
+    this.onAction,
   });
 
   final String title;
-  final String subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge,
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+        if (actionLabel != null && onAction != null)
+          TextButton(
+            onPressed: onAction,
+            child: Text(actionLabel!),
+          ),
       ],
-    );
-  }
-}
-
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({
-    required this.label,
-  });
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE7D3BD)),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-      ),
     );
   }
 }
@@ -610,47 +464,49 @@ class _CoffeeListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(20),
       child: Ink(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.96),
-          borderRadius: BorderRadius.circular(22),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(color: const Color(0xFFE7D3BD)),
         ),
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               child: CoffeeImage(
                 imagePath: coffee.picture,
-                width: 92,
-                height: 92,
+                width: 82,
+                height: 82,
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     coffee.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   Text(
                     coffee.tagline,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          height: 1.4,
-                        ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          height: 1.35,
+                        ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
-                    runSpacing: 8,
+                    runSpacing: 6,
                     children: [
                       _MiniChip(label: coffee.category),
                       _MiniChip(label: coffee.caffeineLevel),
@@ -659,7 +515,7 @@ class _CoffeeListTile extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -670,14 +526,7 @@ class _CoffeeListTile extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  '${coffee.rating.toStringAsFixed(1)}★',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 10),
-                const Icon(Icons.arrow_forward_rounded),
+                const Icon(Icons.arrow_forward_rounded, size: 20),
               ],
             ),
           ],
@@ -688,25 +537,60 @@ class _CoffeeListTile extends StatelessWidget {
 }
 
 class _MiniChip extends StatelessWidget {
-  const _MiniChip({
-    required this.label,
-  });
+  const _MiniChip({required this.label});
 
   final String label;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: const Color(0xFFF5EBDE),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w800,
             ),
+      ),
+    );
+  }
+}
+
+class _MenuErrorView extends StatelessWidget {
+  const _MenuErrorView({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.local_cafe_outlined, size: 52),
+            const SizedBox(height: 12),
+            Text(
+              'Không tải được thực đơn',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Hãy kiểm tra kết nối rồi tải lại menu.',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 18),
+            FilledButton(
+              onPressed: onRetry,
+              child: const Text('Tải lại'),
+            ),
+          ],
+        ),
       ),
     );
   }

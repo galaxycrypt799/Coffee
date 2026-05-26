@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-// TODO: Implement by team member
-// File: theme\app_theme.dart
->>>>>>> dev
 import 'package:flutter/material.dart';
 
 class AppTheme {

@@ -24,8 +24,8 @@ class Cart {
     if (existingIndex >= 0) {
       // Nếu item đã có, tăng quantity
       final updatedItems = List<CartItem>.from(items);
-      updatedItems[existingIndex] =
-          updatedItems[existingIndex].copyWith(quantity: updatedItems[existingIndex].quantity + item.quantity);
+      updatedItems[existingIndex] = updatedItems[existingIndex].copyWith(
+          quantity: updatedItems[existingIndex].quantity + item.quantity);
       return Cart(items: updatedItems);
     } else {
       // Thêm item mới
@@ -62,9 +62,9 @@ class Cart {
       };
 
   factory Cart.fromJson(Map<String, dynamic> json) {
-    final rawItems = (json['items'] as List<dynamic>?)
-            ?.whereType<Map<String, dynamic>>() ??
-        [];
+    final rawItems =
+        (json['items'] as List<dynamic>?)?.whereType<Map<String, dynamic>>() ??
+            [];
     return Cart(
       items: rawItems.map((e) => CartItem.fromJson(e)).toList(),
     );
@@ -73,9 +73,7 @@ class Cart {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Cart &&
-          runtimeType == other.runtimeType &&
-          items == other.items;
+      other is Cart && runtimeType == other.runtimeType && items == other.items;
 
   @override
   int get hashCode => items.hashCode;

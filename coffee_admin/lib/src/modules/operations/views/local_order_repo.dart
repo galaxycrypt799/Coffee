@@ -51,16 +51,17 @@ class LocalOrderRepo implements OrderRepo {
   }
 
   @override
-  Future<List<Order>> getMyOrders(String userId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 180));
+  Future<List<Order>> getMyOrders(
+    String userId, {
+    bool forceRefresh = false,
+  }) async {
     return _orders
         .where((order) => order.userId == userId)
         .toList(growable: false);
   }
 
   @override
-  Future<List<Order>> getOrders() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+  Future<List<Order>> getOrders({bool forceRefresh = false}) async {
     return _orders.toList(growable: false);
   }
 
@@ -74,21 +75,99 @@ class LocalOrderRepo implements OrderRepo {
   }
 
   @override
-  Future<Map<String, dynamic>> getRevenueStats() async {
-    final deliveredOrders = _orders
-        .where((order) => order.status == 'delivered')
-        .toList(growable: false);
+  Future<Map<String, dynamic>> getRevenueStats({
+    bool forceRefresh = false,
+  }) async {
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day);
+    final startOfThisMonth = DateTime(now.year, now.month, 1);
+    final startOfThisYear = DateTime(now.year, 1, 1);
+    const revenueStatuses = <String>{'delivered', 'completed'};
+
+    var today = 0;
+    var month = 0;
+    var year = 0;
+    var completedOrders = 0;
+    final weekly = List<int>.filled(7, 0);
+    final monthly = List<int>.filled(12, 0);
+    final statusCounts = <String, int>{};
+    final itemSales = <String, _ItemSalesAccumulator>{};
+
+    for (final order in _orders) {
+      statusCounts.update(order.status, (count) => count + 1,
+          ifAbsent: () => 1);
+
+      if (!revenueStatuses.contains(order.status)) {
+        continue;
+      }
+
+      completedOrders += 1;
+      final orderTotal = order.totalPrice.round();
+      final orderDate = DateTime(
+          order.createdAt.year, order.createdAt.month, order.createdAt.day);
+
+      if (!order.createdAt.isBefore(startOfToday)) {
+        today += orderTotal;
+      }
+      if (!order.createdAt.isBefore(startOfThisMonth)) {
+        month += orderTotal;
+      }
+      if (!order.createdAt.isBefore(startOfThisYear)) {
+        year += orderTotal;
+        monthly[order.createdAt.month - 1] += orderTotal;
+      }
+
+      final dayDifference = startOfToday.difference(orderDate).inDays;
+      if (dayDifference >= 0 && dayDifference < 7) {
+        weekly[6 - dayDifference] += orderTotal;
+      }
+
+      for (final item in order.items) {
+        final key = item.coffeeId.isNotEmpty ? item.coffeeId : item.name;
+        itemSales
+            .putIfAbsent(key, () => _ItemSalesAccumulator(name: item.name))
+            .add(
+              quantity: item.quantity,
+              revenue: (item.price * item.quantity).round(),
+            );
+      }
+    }
+
+    final topItems = itemSales.values.toList()
+      ..sort((a, b) => b.quantity.compareTo(a.quantity));
 
     return {
-      'today': deliveredOrders
-          .where((order) => order.createdAt.day == DateTime.now().day)
-          .fold<int>(0, (sum, order) => sum + order.totalPrice.round()),
-      'month': deliveredOrders.fold<int>(
-        0,
-        (sum, order) => sum + order.totalPrice.round(),
-      ),
-      'count': deliveredOrders.length,
-      'weekly': <int>[200000, 450000, 300000, 800000, 600000, 150000, 900000],
+      'today': today,
+      'month': month,
+      'year': year,
+      'count': completedOrders,
+      'totalOrders': _orders.length,
+      'weekly': weekly,
+      'monthly': monthly,
+      'topItems': topItems
+          .take(5)
+          .map(
+            (item) => {
+              'name': item.name,
+              'quantity': item.quantity,
+              'revenue': item.revenue,
+            },
+          )
+          .toList(growable: false),
+      'statusCounts': statusCounts,
     };
+  }
+}
+
+class _ItemSalesAccumulator {
+  _ItemSalesAccumulator({required this.name});
+
+  final String name;
+  int quantity = 0;
+  int revenue = 0;
+
+  void add({required int quantity, required int revenue}) {
+    this.quantity += quantity;
+    this.revenue += revenue;
   }
 }

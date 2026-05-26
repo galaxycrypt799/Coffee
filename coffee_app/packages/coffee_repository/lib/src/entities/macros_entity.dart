@@ -22,10 +22,10 @@ class MacrosEntity {
 
   static MacrosEntity fromDocument(Map<String, dynamic> doc) {
     return MacrosEntity(
-      calories: doc['calories'] as int,
-      proteins: doc['proteins'] as int,
-      fat: doc['fat'] as int,
-      carbs: doc['carbs'] as int,
+      calories: (doc['calories'] as num?)?.toInt() ?? 0,
+      proteins: (doc['proteins'] as num?)?.toInt() ?? 0,
+      fat: (doc['fat'] as num?)?.toInt() ?? 0,
+      carbs: (doc['carbs'] as num?)?.toInt() ?? 0,
     );
   }
 }

@@ -39,7 +39,7 @@ class _SignInScreenState extends State<SignInScreen> {
         } else if (state is SignInFailure) {
           setState(() {
             signInRequired = false;
-            _errorMsg = 'Email hoặc mật khẩu không chính xác';
+            _errorMsg = state.message;
           });
         }
       },
@@ -48,7 +48,8 @@ class _SignInScreenState extends State<SignInScreen> {
         body: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -63,7 +64,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: colorScheme.primary.withOpacity(0.2),
+                            color: colorScheme.primary.withValues(alpha: 0.2),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           )
@@ -78,16 +79,17 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 24),
                     Text(
                       'Coffee Admin',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.w800,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.w800,
+                              ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Chào mừng quay trở lại',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurface.withOpacity(0.6),
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                     ),
                     const SizedBox(height: 48),
@@ -104,7 +106,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         validator: (val) {
                           if (val == null || val.isEmpty) {
                             return 'Vui lòng nhập email';
-                          } else if (!RegExp(r'^[\w-\.]+@([\w-]+.)+[\w-]{2,4}$').hasMatch(val)) {
+                          } else if (!RegExp(r'^[\w-\.]+@([\w-]+.)+[\w-]{2,4}$')
+                              .hasMatch(val)) {
                             return 'Email không hợp lệ';
                           }
                           return null;
@@ -132,9 +135,9 @@ class _SignInScreenState extends State<SignInScreen> {
                           onPressed: () {
                             setState(() {
                               obscurePassword = !obscurePassword;
-                              iconPassword = obscurePassword 
-                                ? CupertinoIcons.eye_fill 
-                                : CupertinoIcons.eye_slash_fill;
+                              iconPassword = obscurePassword
+                                  ? CupertinoIcons.eye_fill
+                                  : CupertinoIcons.eye_slash_fill;
                             });
                           },
                           icon: Icon(iconPassword),
@@ -151,7 +154,8 @@ class _SignInScreenState extends State<SignInScreen> {
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   context.read<SignInBloc>().add(SignInRequired(
-                                      emailController.text, passwordController.text));
+                                      emailController.text,
+                                      passwordController.text));
                                 }
                               },
                               style: ElevatedButton.styleFrom(

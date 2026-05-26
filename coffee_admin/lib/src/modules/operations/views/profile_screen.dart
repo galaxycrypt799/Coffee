@@ -22,26 +22,37 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const CircleAvatar(radius: 40, child: Icon(Icons.person, size: 40)),
+                const CircleAvatar(
+                    radius: 40, child: Icon(Icons.person, size: 40)),
                 const SizedBox(width: 20),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(user?.name ?? "Khách hàng", style: Theme.of(context).textTheme.headlineSmall),
-                    Text(user?.email ?? "", style: const TextStyle(color: Colors.grey)),
+                    Text(user?.name ?? "Khách hàng",
+                        style: Theme.of(context).textTheme.headlineSmall),
+                    Text(user?.email ?? "",
+                        style: const TextStyle(color: Colors.grey)),
                   ],
                 )
               ],
             ),
             const SizedBox(height: 40),
-            const Text("Đơn hàng gần đây", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Đơn hàng gần đây",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             BlocBuilder<MyOrdersBloc, MyOrdersState>(
               builder: (context, state) {
-                if (state is MyOrdersLoading) return const Center(child: CircularProgressIndicator());
-                if (state is MyOrdersFailure) return const Center(child: Text("Không thể tải lịch sử đơn hàng"));
+                if (state is MyOrdersLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is MyOrdersFailure) {
+                  return const Center(
+                      child: Text("Không thể tải lịch sử đơn hàng"));
+                }
                 if (state is MyOrdersSuccess) {
-                  if (state.orders.isEmpty) return const Text("Bạn chưa có đơn hàng nào.");
+                  if (state.orders.isEmpty) {
+                    return const Text("Bạn chưa có đơn hàng nào.");
+                  }
 
                   return ListView.builder(
                     shrinkWrap: true,
@@ -53,12 +64,15 @@ class ProfileScreen extends StatelessWidget {
                         margin: const EdgeInsets.only(bottom: 12),
                         child: ListTile(
                           title: Text("Đơn #${order.id.substring(0, 8)}"),
-                          subtitle: Text(DateFormat('dd/MM/yyyy HH:mm').format(order.createdAt)),
+                          subtitle: Text(DateFormat('dd/MM/yyyy HH:mm')
+                              .format(order.createdAt)),
                           trailing: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(formatVnd(order.totalPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
+                              Text(formatVnd(order.totalPrice),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
                               _buildStatusBadge(order.status),
                             ],
                           ),
@@ -110,7 +124,9 @@ class ProfileScreen extends StatelessWidget {
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(text, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+      child: Text(text,
+          style: TextStyle(
+              color: color, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 }

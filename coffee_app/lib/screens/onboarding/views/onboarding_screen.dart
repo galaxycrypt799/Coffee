@@ -13,27 +13,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
 
-  final List<OnboardingData> _pages = [
+  static const List<OnboardingData> _pages = [
     OnboardingData(
-      title: 'Thức uống đa dạng',
+      title: 'Cà phê đúng gu',
       description:
-          'Từ cà phê đậm đà, trà thơm mát, sinh tố tươi ngon đến nước ép bổ dưỡng — tất cả đều có trong tầm tay bạn.',
-      image: 'assets/coffee/onboarding_1.jpg',
-      icon: Icons.local_drink_rounded,
+          'Chọn nhanh phin Việt, cold brew, latte hoặc espresso với hình ảnh và thông tin rõ ràng.',
+      image: 'assets/coffee/velvet_latte.jpg',
+      icon: Icons.local_cafe_rounded,
     ),
     OnboardingData(
-      title: 'Đặt món siêu nhanh',
+      title: 'Đặt món mượt hơn',
       description:
-          'Chỉ vài chạm là có ngay đồ uống yêu thích. Đặt trước, đến lấy ngay — không phải xếp hàng chờ đợi.',
-      image: 'assets/coffee/onboarding_2.jpg',
-      icon: Icons.flash_on_rounded,
+          'Xem giá, ưu đãi, mô tả món và thêm vào giỏ chỉ trong vài thao tác.',
+      image: 'assets/coffee/midnight_mocha.jpg',
+      icon: Icons.shopping_bag_rounded,
     ),
     OnboardingData(
-      title: 'Thưởng thức mọi lúc',
+      title: 'Theo dõi đơn dễ dàng',
       description:
-          'Dù bạn ở nhà, ở văn phòng hay đang dạo phố — đồ uống ngon luôn sẵn sàng phục vụ bạn. Giao nhanh, tiện lợi.',
-      image: 'assets/coffee/onboarding_3.jpg',
-      icon: Icons.auto_awesome_rounded,
+          'Sau khi đặt hàng, đơn sẽ nằm trong Hoạt động để bạn kiểm tra trạng thái bất cứ lúc nào.',
+      image: 'assets/coffee/hero_shop.jpg',
+      icon: Icons.receipt_long_rounded,
     ),
   ];
 
@@ -46,58 +46,69 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             controller: _pageController,
             itemCount: _pages.length,
             onPageChanged: (index) => setState(() => _currentIndex = index),
-            itemBuilder: (context, index) {
-              return _OnboardingPage(data: _pages[index]);
-            },
+            itemBuilder: (context, index) => _OnboardingPage(
+              data: _pages[index],
+              pageIndex: index,
+              pageCount: _pages.length,
+            ),
           ),
           Positioned(
-            bottom: 60,
+            top: MediaQuery.of(context).padding.top + 12,
+            right: 20,
+            child: TextButton(
+              onPressed: widget.onFinish,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.black.withValues(alpha: 0.24),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              child: const Text('Bỏ qua'),
+            ),
+          ),
+          Positioned(
             left: 24,
             right: 24,
+            bottom: MediaQuery.of(context).padding.bottom + 28,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: List.generate(
-                    _pages.length,
-                    (index) => Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      width: _currentIndex == index ? 24 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _currentIndex == index
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.white.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(4),
+                Expanded(
+                  child: Row(
+                    children: List.generate(
+                      _pages.length,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        margin: const EdgeInsets.only(right: 8),
+                        width: _currentIndex == index ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _currentIndex == index
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.34),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
                       ),
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    if (_currentIndex < _pages.length - 1) {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
-                      );
-                    } else {
-                      widget.onFinish();
-                    }
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
+                FilledButton(
+                  onPressed: _goNextOrFinish,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF2C1B16),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                      horizontal: 22,
+                      vertical: 14,
+                    ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                   child: Text(
-                    _currentIndex < _pages.length - 1
-                        ? 'Tiếp theo'
-                        : 'Bắt đầu ngay',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    _currentIndex < _pages.length - 1 ? 'Tiếp theo' : 'Bắt đầu',
                   ),
                 ),
               ],
@@ -107,25 +118,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
+
+  void _goNextOrFinish() {
+    if (_currentIndex < _pages.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 360),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+    widget.onFinish();
+  }
 }
 
 class OnboardingData {
-  final String title;
-  final String description;
-  final String image;
-  final IconData icon;
-
-  OnboardingData({
+  const OnboardingData({
     required this.title,
     required this.description,
     required this.image,
     required this.icon,
   });
+
+  final String title;
+  final String description;
+  final String image;
+  final IconData icon;
 }
 
 class _OnboardingPage extends StatelessWidget {
-  const _OnboardingPage({required this.data});
+  const _OnboardingPage({
+    required this.data,
+    required this.pageIndex,
+    required this.pageCount,
+  });
+
   final OnboardingData data;
+  final int pageIndex;
+  final int pageCount;
 
   @override
   Widget build(BuildContext context) {
@@ -133,55 +162,74 @@ class _OnboardingPage extends StatelessWidget {
       children: [
         Positioned.fill(
           child: Image.asset(
-            'assets/coffee/hero_shop.jpg',
+            data.image,
             fit: BoxFit.cover,
           ),
         ),
         Positioned.fill(
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.2),
-                  const Color(0xCC241611),
-                  const Color(0xFF1A120F),
+                  Colors.black.withValues(alpha: 0.08),
+                  Colors.black.withValues(alpha: 0.38),
+                  const Color(0xFF1B100D),
                 ],
+                stops: const [0.0, 0.46, 1.0],
               ),
             ),
           ),
         ),
         SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: const EdgeInsets.fromLTRB(24, 80, 24, 110),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 60),
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
-                  child: Icon(data.icon, color: Colors.white, size: 40),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.16),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(data.icon, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${pageIndex + 1}/$pageCount',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 32),
+                const Spacer(),
                 Text(
                   data.title,
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
+                        height: 1.02,
                       ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 Text(
                   data.description,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 18,
-                        height: 1.6,
+                        color: Colors.white.withValues(alpha: 0.86),
+                        height: 1.5,
                       ),
                 ),
               ],

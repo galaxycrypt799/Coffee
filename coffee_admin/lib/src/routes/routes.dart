@@ -28,10 +28,17 @@ GoRouter router(AuthenticationBloc authBloc) {
       navigatorKey: _navKey,
       initialLocation: '/',
       redirect: (context, state) {
-        if (authBloc.state.status == AuthenticationStatus.unknown) {
-          return '/';
+        final location = state.fullPath ?? state.uri.path;
+        final isAuthRoute = location == '/' || location == '/login';
+
+        switch (authBloc.state.status) {
+          case AuthenticationStatus.unknown:
+            return location == '/' ? null : '/';
+          case AuthenticationStatus.unauthenticated:
+            return isAuthRoute ? null : '/login';
+          case AuthenticationStatus.authenticated:
+            return isAuthRoute ? '/home' : null;
         }
-        return null;
       },
       routes: [
         ShellRoute(
@@ -70,12 +77,12 @@ GoRouter router(AuthenticationBloc authBloc) {
                 path: '/home',
                 builder: (context, state) => BlocProvider(
                   create: (context) => RevenueBloc(context.read<OrderRepo>())
-                    ..add(GetRevenueRequested()),
+                    ..add(const GetRevenueRequested()),
                   child: const HomeScreen(),
                 ),
               ),
               GoRoute(
-                path: '/create',
+                path: '/products',
                 builder: (context, state) {
                   final coffeeRepo = context.read<CoffeeRepo>();
 
@@ -93,6 +100,10 @@ GoRouter router(AuthenticationBloc authBloc) {
                 },
               ),
               GoRoute(
+                path: '/create',
+                redirect: (context, state) => '/products',
+              ),
+              GoRoute(
                 path: '/orders',
                 builder: (context, state) => MultiBlocProvider(
                   providers: [
@@ -103,7 +114,7 @@ GoRouter router(AuthenticationBloc authBloc) {
                     BlocProvider(
                       create: (context) =>
                           RevenueBloc(context.read<OrderRepo>())
-                            ..add(GetRevenueRequested()),
+                            ..add(const GetRevenueRequested()),
                     ),
                   ],
                   child: const OrdersScreen(),
@@ -113,7 +124,8 @@ GoRouter router(AuthenticationBloc authBloc) {
                 path: '/profile',
                 builder: (context, state) => BlocProvider(
                   create: (context) => UsersListBloc(
-                    userRepository: context.read<AuthenticationBloc>().userRepository,
+                    userRepository:
+                        context.read<AuthenticationBloc>().userRepository,
                     orderRepo: context.read<OrderRepo>(),
                   )..add(const FetchUsersRequested()),
                   child: const UsersScreen(),

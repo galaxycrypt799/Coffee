@@ -21,6 +21,11 @@ class CoffeeImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth =
+        width == null ? null : (width! * devicePixelRatio).round();
+    final cacheHeight =
+        height == null ? null : (height! * devicePixelRatio).round();
     final fallback = errorChild ??
         Container(
           color: Colors.grey.shade200,
@@ -37,6 +42,11 @@ class CoffeeImage extends StatelessWidget {
         fit: fit,
         width: width,
         height: height,
+        cacheWidth: cacheWidth,
+        cacheHeight: cacheHeight,
+        filterQuality: FilterQuality.low,
+        gaplessPlayback: true,
+        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
         errorBuilder: (_, __, ___) => fallback,
         loadingBuilder: (context, child, progress) {
           if (progress == null) {
@@ -60,6 +70,9 @@ class CoffeeImage extends StatelessWidget {
       fit: fit,
       width: width,
       height: height,
+      cacheWidth: cacheWidth,
+      cacheHeight: cacheHeight,
+      filterQuality: FilterQuality.low,
       errorBuilder: (_, __, ___) => fallback,
     );
   }

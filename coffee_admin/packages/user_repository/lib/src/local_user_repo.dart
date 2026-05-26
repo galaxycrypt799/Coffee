@@ -17,7 +17,19 @@ class LocalUserRepo implements UserRepository {
       ),
       password: 'Admin@123',
     ),
+    'guest@roastritual.app': _StoredUser(
+      user: MyUser(
+        userId: 'local-guest',
+        email: 'guest@roastritual.app',
+        name: 'Coffee Guest',
+        hasActiveCart: false,
+        membershipRank: 'silver',
+        totalSpent: 1250000,
+      ),
+      password: 'Coffee@123',
+    ),
   };
+  final Set<String> _adminUserIds = <String>{'local-admin'};
 
   MyUser _currentUser = MyUser.empty;
 
@@ -35,6 +47,9 @@ class LocalUserRepo implements UserRepository {
 
     if (account == null || account.password != password) {
       throw StateError('Invalid email or password');
+    }
+    if (!_adminUserIds.contains(account.user.userId)) {
+      throw StateError('Tài khoản này chưa có quyền admin.');
     }
 
     _currentUser = account.user;
@@ -86,6 +101,51 @@ class LocalUserRepo implements UserRepository {
     );
     _currentUser = myUser;
     _userController.add(_currentUser);
+  }
+
+  @override
+  Future<void> updateUserData(MyUser myUser) async {
+    final entry = _users.entries.firstWhere(
+      (item) => item.value.user.userId == myUser.userId,
+      orElse: () => throw StateError('User not found'),
+    );
+    _users[entry.key] = _StoredUser(
+      user: myUser,
+      password: entry.value.password,
+    );
+    if (_currentUser.userId == myUser.userId) {
+      _currentUser = myUser;
+      _userController.add(_currentUser);
+    }
+  }
+
+  @override
+  Future<List<MyUser>> getAllUsers() async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    return _users.values.map((stored) => stored.user).toList();
+  }
+
+  @override
+  Future<Set<String>> getAdminUserIds() async {
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    return Set<String>.from(_adminUserIds);
+  }
+
+  @override
+  Future<bool> isCurrentUserAdmin() async {
+    return _adminUserIds.contains(_currentUser.userId);
+  }
+
+  @override
+  Future<void> setAdminRole(String userId, bool isAdmin) async {
+    if (_currentUser.userId == userId && !isAdmin) {
+      throw StateError('Không thể tự gỡ quyền admin của chính mình.');
+    }
+    if (isAdmin) {
+      _adminUserIds.add(userId);
+    } else {
+      _adminUserIds.remove(userId);
+    }
   }
 }
 
