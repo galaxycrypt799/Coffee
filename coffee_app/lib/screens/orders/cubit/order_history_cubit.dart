@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:user_repository/user_repository.dart';
@@ -13,23 +15,87 @@ class OrderHistoryCubit extends Cubit<OrderHistoryState> {
   OrderHistoryCubit(this._orderRepository) : super(const OrderHistoryState());
 
   final OrderRepository _orderRepository;
+  static const Duration _stateTtl = Duration(seconds: 45);
 
-  Future<void> loadOrders(String userId) async {
-    if (userId.trim().isEmpty) {
+  String? _loadedUserId;
+  String? _requestedUserId;
+  DateTime? _lastLoadedAt;
+  Future<void>? _activeLoad;
+  String? _activeLoadUserId;
+
+  Future<void> loadOrders(
+    String userId, {
+    bool forceRefresh = false,
+  }) async {
+    final trimmedUserId = userId.trim();
+
+    if (trimmedUserId.isEmpty) {
+      _loadedUserId = null;
+      _requestedUserId = null;
+      _lastLoadedAt = null;
       emit(state.copyWith(orders: const <Order>[], isLoading: false));
       return;
     }
 
-    emit(
-      state.copyWith(
-        isLoading: true,
-        clearError: true,
-        clearSuccess: true,
-      ),
-    );
+    final lastLoadedAt = _lastLoadedAt;
+    final hasFreshState = _loadedUserId == trimmedUserId &&
+        lastLoadedAt != null &&
+        DateTime.now().difference(lastLoadedAt) < _stateTtl;
+
+    if (!forceRefresh && hasFreshState) {
+      return;
+    }
+
+    final activeLoad = _activeLoad;
+    if (!forceRefresh &&
+        activeLoad != null &&
+        _activeLoadUserId == trimmedUserId) {
+      await activeLoad;
+      return;
+    }
+
+    final shouldShowFullLoader =
+        state.orders.isEmpty || _loadedUserId != trimmedUserId;
+
+    if (shouldShowFullLoader || state.errorMessage != null) {
+      emit(
+        state.copyWith(
+          isLoading: shouldShowFullLoader,
+          clearError: true,
+          clearSuccess: true,
+        ),
+      );
+    }
+
+    final load = _loadOrders(trimmedUserId, forceRefresh: forceRefresh);
+    _requestedUserId = trimmedUserId;
+    _activeLoad = load;
+    _activeLoadUserId = trimmedUserId;
 
     try {
-      final orders = await _orderRepository.getOrdersForUser(userId);
+      await load;
+    } finally {
+      if (identical(_activeLoad, load)) {
+        _activeLoad = null;
+        _activeLoadUserId = null;
+      }
+    }
+  }
+
+  Future<void> _loadOrders(
+    String userId, {
+    required bool forceRefresh,
+  }) async {
+    try {
+      final orders = await _orderRepository.getOrdersForUser(
+        userId,
+        forceRefresh: forceRefresh,
+      );
+      if (_requestedUserId != userId) {
+        return;
+      }
+      _loadedUserId = userId;
+      _lastLoadedAt = DateTime.now();
       emit(
         state.copyWith(
           isLoading: false,
@@ -37,6 +103,9 @@ class OrderHistoryCubit extends Cubit<OrderHistoryState> {
         ),
       );
     } catch (error) {
+      if (_requestedUserId != userId) {
+        return;
+      }
       emit(
         state.copyWith(
           isLoading: false,
@@ -92,7 +161,6 @@ class OrderHistoryCubit extends Cubit<OrderHistoryState> {
 
     try {
       await _orderRepository.placeOrder(order);
-      await userRepository.updateUserSpent(user.userId, totalPrice);
     } catch (error) {
       emit(
         state.copyWith(
@@ -103,19 +171,23 @@ class OrderHistoryCubit extends Cubit<OrderHistoryState> {
       return false;
     }
 
-    var updatedOrders = <Order>[order, ...state.orders];
     try {
-      final refreshedOrders =
-          await _orderRepository.getOrdersForUser(user.userId);
-      updatedOrders = refreshedOrders.any((item) => item.id == order.id)
-          ? refreshedOrders
-          : <Order>[order, ...refreshedOrders];
-    } catch (_) {
-      updatedOrders = <Order>[
-        order,
-        ...state.orders.where((item) => item.id != order.id),
-      ];
+      await userRepository.updateUserSpent(user.userId, totalPrice);
+    } catch (error, stackTrace) {
+      log(
+        'Updating loyalty spend failed after order placement.',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
+
+    final updatedOrders = <Order>[
+      order,
+      ...state.orders.where((item) => item.id != order.id),
+    ];
+    _loadedUserId = user.userId;
+    _requestedUserId = user.userId;
+    _lastLoadedAt = DateTime.now();
 
     emit(
       state.copyWith(
