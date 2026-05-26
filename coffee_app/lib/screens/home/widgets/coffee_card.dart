@@ -1,10 +1,7 @@
-// TODO: Implement by team member
-// File: screens\home\widgets\coffee_card.dart
-import 'package:flutter/material.dart';
-
 import 'package:coffee_app/components/coffee_image.dart';
 import 'package:coffee_app/utils/price_formatter.dart';
 import 'package:coffee_repository/coffee_repository.dart';
+import 'package:flutter/material.dart';
 
 class CoffeeCard extends StatelessWidget {
   const CoffeeCard({
@@ -18,14 +15,16 @@ class CoffeeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasDiscount = coffee.discount > 0;
+
     return SizedBox(
-      width: 238,
+      width: 236,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Ink(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.95),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(color: const Color(0xFFE7D3BD)),
           ),
@@ -33,7 +32,6 @@ class CoffeeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                flex: 7,
                 child: Hero(
                   tag: 'coffee-${coffee.coffeeId}',
                   child: Stack(
@@ -48,46 +46,46 @@ class CoffeeCard extends StatelessWidget {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      DecoratedBox(
+                      const DecoratedBox(
                         decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(
+                          borderRadius: BorderRadius.vertical(
                             top: Radius.circular(22),
                           ),
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black.withValues(alpha: 0.12),
-                              Colors.black.withValues(alpha: 0.55),
+                              Color(0x11241612),
+                              Color(0xAA241612),
                             ],
                           ),
                         ),
                       ),
                       Positioned(
-                        top: 14,
-                        left: 14,
+                        top: 12,
+                        left: 12,
                         child: _OverlayTag(label: coffee.category),
                       ),
                       Positioned(
-                        top: 14,
-                        right: 14,
+                        top: 12,
+                        right: 12,
                         child: _OverlayTag(
-                          label: coffee.discount > 0
+                          label: hasDiscount
                               ? '-${coffee.discount}%'
                               : '${coffee.rating.toStringAsFixed(1)}★',
                         ),
                       ),
                       Positioned(
-                        left: 16,
-                        right: 16,
-                        bottom: 16,
+                        left: 14,
+                        right: 14,
+                        bottom: 14,
                         child: Text(
                           coffee.tagline,
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.35,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.25,
                                   ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -97,25 +95,29 @@ class CoffeeCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
-                flex: 5,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              coffee.name,
-                              style: Theme.of(context).textTheme.titleLarge,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      coffee.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      coffee.origin,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
                             formatVnd(coffee.discountedPrice),
                             style: Theme.of(context)
                                 .textTheme
@@ -124,24 +126,11 @@ class CoffeeCard extends StatelessWidget {
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        coffee.origin,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const Spacer(),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _BottomPill(label: coffee.caffeineLevel),
-                          _BottomPill(label: '${coffee.brewMinutes} phút'),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                        _BottomPill(label: '${coffee.brewMinutes} phút'),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -153,9 +142,7 @@ class CoffeeCard extends StatelessWidget {
 }
 
 class _OverlayTag extends StatelessWidget {
-  const _OverlayTag({
-    required this.label,
-  });
+  const _OverlayTag({required this.label});
 
   final String label;
 
@@ -164,14 +151,14 @@ class _OverlayTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
             ),
       ),
     );
@@ -179,24 +166,22 @@ class _OverlayTag extends StatelessWidget {
 }
 
 class _BottomPill extends StatelessWidget {
-  const _BottomPill({
-    required this.label,
-  });
+  const _BottomPill({required this.label});
 
   final String label;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFFF5EBDE),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w800,
             ),
       ),
     );
