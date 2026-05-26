@@ -1,2 +1,14 @@
-// TODO: Implement by team member
-// File: src\blocs\authentication_bloc\authentication_event.dart
+part of 'authentication_bloc.dart';
+
+sealed class AuthenticationEvent extends Equatable {
+  const AuthenticationEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class AuthenticationUserChanged extends AuthenticationEvent {
+  final MyUser? user;
+
+  const AuthenticationUserChanged(this.user);
+}

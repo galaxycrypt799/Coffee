@@ -1,2 +1,30 @@
-// TODO: Implement by team member
-// File: src\modules\operations\blocs\upload_picture_bloc\upload_picture_state.dart
+part of 'upload_picture_bloc.dart';
+
+sealed class UploadPictureState extends Equatable {
+  const UploadPictureState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class UploadPictureInitial extends UploadPictureState {}
+
+final class UploadPictureLoading extends UploadPictureState {}
+
+final class UploadPictureFailure extends UploadPictureState {
+  const UploadPictureFailure(this.message);
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+final class UploadPictureSuccess extends UploadPictureState {
+  final String url;
+
+  const UploadPictureSuccess(this.url);
+
+  @override
+  List<Object?> get props => [url];
+}
