@@ -115,7 +115,7 @@ git push -u origin feature/runtime-project-files hoac fix/core-bootstrap
 ## Checklist review PR
 
 - [ ] PR base vao `dev`.
-- [ ] Ten branch dung `feature/personX-scope`.
+- [ ] Ten branch dung `feature/...` cho file moi va `fix/...` cho file cu can sua.
 - [ ] Commit message dung Conventional Commits.
 - [ ] Khong sua file ngoai pham vi neu khong co ly do.
 - [ ] Chay duoc `flutter analyze`.
