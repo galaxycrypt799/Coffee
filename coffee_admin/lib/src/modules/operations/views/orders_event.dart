@@ -8,11 +8,15 @@ abstract class OrdersEvent extends Equatable {
 
 class GetOrders extends OrdersEvent {
   final bool showLoader;
+  final bool forceRefresh;
 
-  const GetOrders({this.showLoader = true});
+  const GetOrders({
+    this.showLoader = true,
+    this.forceRefresh = false,
+  });
 
   @override
-  List<Object> get props => [showLoader];
+  List<Object> get props => [showLoader, forceRefresh];
 }
 
 class UpdateOrderStatus extends OrdersEvent {

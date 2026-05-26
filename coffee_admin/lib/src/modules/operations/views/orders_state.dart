@@ -7,7 +7,9 @@ abstract class OrdersState extends Equatable {
 }
 
 class OrdersLoading extends OrdersState {}
+
 class OrdersFailure extends OrdersState {}
+
 class OrdersSuccess extends OrdersState {
   final List<Order> orders;
   const OrdersSuccess(this.orders);
