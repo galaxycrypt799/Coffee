@@ -21,9 +21,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     if (state is CartLoaded) {
       final state = this.state as CartLoaded;
       final items = List<OrderItem>.from(state.items);
-      
+
       // Kiểm tra món đã tồn tại trong giỏ chưa
-      final index = items.indexWhere((item) => item.coffeeId == event.coffee.coffeeId);
+      final index =
+          items.indexWhere((item) => item.coffeeId == event.coffee.coffeeId);
 
       if (index >= 0) {
         // Nếu có rồi thì tăng số lượng

@@ -43,7 +43,9 @@ abstract class MyOrdersState extends Equatable {
 }
 
 class MyOrdersInitial extends MyOrdersState {}
+
 class MyOrdersLoading extends MyOrdersState {}
+
 class MyOrdersFailure extends MyOrdersState {}
 
 class MyOrdersSuccess extends MyOrdersState {

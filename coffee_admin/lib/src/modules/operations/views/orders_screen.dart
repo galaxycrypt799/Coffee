@@ -39,8 +39,12 @@ class OrdersScreen extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: IconButton.filledTonal(
                 onPressed: () {
-                  context.read<OrdersBloc>().add(const GetOrders());
-                  context.read<RevenueBloc>().add(GetRevenueRequested());
+                  context.read<OrdersBloc>().add(
+                        const GetOrders(forceRefresh: true),
+                      );
+                  context.read<RevenueBloc>().add(
+                        const GetRevenueRequested(forceRefresh: true),
+                      );
                 },
                 icon: const Icon(Icons.refresh_rounded),
               ),
