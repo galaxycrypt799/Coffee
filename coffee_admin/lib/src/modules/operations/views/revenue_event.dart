@@ -7,4 +7,11 @@ sealed class RevenueEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetRevenueRequested extends RevenueEvent {}
+class GetRevenueRequested extends RevenueEvent {
+  const GetRevenueRequested({this.forceRefresh = false});
+
+  final bool forceRefresh;
+
+  @override
+  List<Object> get props => [forceRefresh];
+}
