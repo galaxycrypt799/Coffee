@@ -1,2 +1,20 @@
-// TODO: Implement by team member
-// File: src\modules\auth\blocs\sing_in_bloc\sign_in_event.dart
+part of 'sign_in_bloc.dart';
+
+sealed class SignInEvent extends Equatable {
+  const SignInEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class SignInRequired extends SignInEvent {
+  final String email;
+  final String password;
+
+  const SignInRequired(this.email, this.password);
+
+  @override
+  List<Object> get props => [email];
+}
+
+class SignOutRequired extends SignInEvent {}
