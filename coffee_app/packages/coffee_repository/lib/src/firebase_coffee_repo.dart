@@ -12,9 +12,45 @@ class FirebaseCoffeeRepo implements CoffeeRepo {
 
   final CollectionReference<Map<String, dynamic>> _coffeeCollection;
   final bool seedIfEmpty;
+  static const Duration _cacheTtl = Duration(minutes: 5);
+
+  List<Coffee>? _cachedCoffees;
+  DateTime? _lastFetchAt;
+  Future<List<Coffee>>? _activeFetch;
 
   @override
-  Future<List<Coffee>> getCoffees() async {
+  Future<List<Coffee>> getCoffees({bool forceRefresh = false}) async {
+    final cachedCoffees = _cachedCoffees;
+    final lastFetchAt = _lastFetchAt;
+    final isCacheFresh = cachedCoffees != null &&
+        lastFetchAt != null &&
+        DateTime.now().difference(lastFetchAt) < _cacheTtl;
+
+    if (!forceRefresh && isCacheFresh) {
+      return cachedCoffees;
+    }
+
+    final activeFetch = _activeFetch;
+    if (!forceRefresh && activeFetch != null) {
+      return activeFetch;
+    }
+
+    final fetch = _loadCoffees();
+    _activeFetch = fetch;
+
+    try {
+      final coffees = await fetch;
+      _cachedCoffees = List<Coffee>.unmodifiable(coffees);
+      _lastFetchAt = DateTime.now();
+      return _cachedCoffees!;
+    } finally {
+      if (identical(_activeFetch, fetch)) {
+        _activeFetch = null;
+      }
+    }
+  }
+
+  Future<List<Coffee>> _loadCoffees() async {
     try {
       var snapshot = await _coffeeCollection.orderBy('sortOrder').get();
 

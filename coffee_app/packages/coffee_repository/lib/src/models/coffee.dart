@@ -11,7 +11,7 @@ class Coffee {
     required this.description,
     required this.category,
     required this.origin,
-    required this.roastLevel,
+    required this.caffeineLevel,
     required this.intensity,
     required this.brewMinutes,
     required this.volumeMl,
@@ -30,7 +30,7 @@ class Coffee {
   final String description;
   final String category;
   final String origin;
-  final String roastLevel;
+  final String caffeineLevel;
   final int intensity;
   final int brewMinutes;
   final int volumeMl;
@@ -52,7 +52,7 @@ class Coffee {
       description: description,
       category: category,
       origin: origin,
-      roastLevel: roastLevel,
+      caffeineLevel: caffeineLevel,
       intensity: intensity,
       brewMinutes: brewMinutes,
       volumeMl: volumeMl,
@@ -74,7 +74,7 @@ class Coffee {
       description: entity.description,
       category: entity.category,
       origin: entity.origin,
-      roastLevel: entity.roastLevel,
+      caffeineLevel: entity.caffeineLevel,
       intensity: entity.intensity,
       brewMinutes: entity.brewMinutes,
       volumeMl: entity.volumeMl,
