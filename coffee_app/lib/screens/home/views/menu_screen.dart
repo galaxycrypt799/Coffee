@@ -1,13 +1,12 @@
+import 'package:coffee_app/app_bootstrap.dart';
+import 'package:coffee_app/components/coffee_image.dart';
+import 'package:coffee_app/screens/home/blocs/cart_bloc/cart_bloc.dart';
+import 'package:coffee_app/screens/home/blocs/get_coffee_bloc/get_coffee_bloc.dart';
+import 'package:coffee_app/screens/home/views/details_screen.dart';
+import 'package:coffee_app/utils/price_formatter.dart';
+import 'package:coffee_repository/coffee_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:coffee_app/app_bootstrap.dart';
-import '../../../components/coffee_image.dart';
-import '../../../utils/price_formatter.dart';
-import '../../home/blocs/get_coffee_bloc/get_coffee_bloc.dart';
-import '../../home/blocs/cart_bloc/cart_bloc.dart';
-import 'details_screen.dart';
-import 'package:coffee_repository/coffee_repository.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({
@@ -22,9 +21,11 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  String _searchQuery = '';
-  String _selectedCategory = 'Tất cả';
+  static const _allCategory = 'Tất cả';
+
   final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _selectedCategory = _allCategory;
 
   @override
   void dispose() {
@@ -42,57 +43,60 @@ class _MenuScreenState extends State<MenuScreen> {
 
         if (state is GetCoffeeSuccess) {
           final drinks = state.coffees;
-
-          final categories = <String>['Tất cả'];
-          final raw = drinks.map((d) => d.category).toSet();
-          categories.addAll(raw);
-
-          var filtered = _selectedCategory == 'Tất cả'
-              ? drinks
-              : drinks.where((d) => d.category == _selectedCategory).toList();
-
-          if (_searchQuery.isNotEmpty) {
-            final query = _searchQuery.toLowerCase();
-            filtered = filtered.where((d) {
-              return d.name.toLowerCase().contains(query) ||
-                  d.tagline.toLowerCase().contains(query) ||
-                  d.description.toLowerCase().contains(query);
-            }).toList();
-          }
+          final categories = <String>[
+            _allCategory,
+            ...drinks
+                .map((drink) => drink.category)
+                .where((category) => category.trim().isNotEmpty)
+                .toSet(),
+          ];
+          final filtered = _filterDrinks(drinks);
 
           return _MenuBody(
             bootstrap: widget.bootstrap,
             drinks: filtered,
+            totalDrinks: drinks.length,
             categories: categories,
             selectedCategory: _selectedCategory,
             searchController: _searchController,
-            onCategoryChanged: (cat) => setState(() => _selectedCategory = cat),
-            onSearchChanged: (q) => setState(() => _searchQuery = q),
+            onCategoryChanged: (category) {
+              setState(() => _selectedCategory = category);
+            },
+            onSearchChanged: (query) {
+              setState(() => _searchQuery = query);
+            },
           );
         }
 
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.local_drink_outlined, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                'Không tải được thực đơn',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () {
-                  context.read<GetCoffeeBloc>().add(GetCoffeeRequested());
-                },
-                child: const Text('Thử lại'),
-              ),
-            ],
-          ),
+        return _MenuErrorView(
+          onRetry: () {
+            context
+                .read<GetCoffeeBloc>()
+                .add(const GetCoffeeRequested(forceRefresh: true));
+          },
         );
       },
     );
+  }
+
+  List<Coffee> _filterDrinks(List<Coffee> drinks) {
+    var filtered = _selectedCategory == _allCategory
+        ? drinks
+        : drinks
+            .where((drink) => drink.category == _selectedCategory)
+            .toList(growable: false);
+
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) {
+      return filtered;
+    }
+
+    return filtered.where((drink) {
+      return drink.name.toLowerCase().contains(query) ||
+          drink.tagline.toLowerCase().contains(query) ||
+          drink.description.toLowerCase().contains(query) ||
+          drink.origin.toLowerCase().contains(query);
+    }).toList(growable: false);
   }
 }
 
@@ -100,6 +104,7 @@ class _MenuBody extends StatelessWidget {
   const _MenuBody({
     required this.bootstrap,
     required this.drinks,
+    required this.totalDrinks,
     required this.categories,
     required this.selectedCategory,
     required this.searchController,
@@ -109,6 +114,7 @@ class _MenuBody extends StatelessWidget {
 
   final AppBootstrap bootstrap;
   final List<Coffee> drinks;
+  final int totalDrinks;
   final List<String> categories;
   final String selectedCategory;
   final TextEditingController searchController;
@@ -117,16 +123,22 @@ class _MenuBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    const chipBorderSide = BorderSide(color: Color(0xFFE7D3BD));
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thực đơn đồ uống'),
+        title: const Text('Đặt món'),
+        actions: [
+          IconButton(
+            tooltip: 'Giỏ hàng',
+            onPressed: () => Navigator.of(context).pushNamed('/cart'),
+            icon: const Icon(Icons.shopping_cart_outlined),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          context.read<GetCoffeeBloc>().add(GetCoffeeRequested());
+          context
+              .read<GetCoffeeBloc>()
+              .add(const GetCoffeeRequested(forceRefresh: true));
           await Future<void>.delayed(const Duration(milliseconds: 450));
         },
         child: CustomScrollView(
@@ -135,16 +147,26 @@ class _MenuBody extends StatelessWidget {
           ),
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              sliver: SliverToBoxAdapter(
+                child: _MenuSummary(
+                  totalDrinks: totalDrinks,
+                  backendLabel: bootstrap.statusTitle,
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
               sliver: SliverToBoxAdapter(
                 child: TextField(
                   controller: searchController,
                   onChanged: onSearchChanged,
                   decoration: InputDecoration(
-                    hintText: 'Tìm đồ uống...',
+                    hintText: 'Tìm món, hương vị, nguồn gốc...',
                     prefixIcon: const Icon(Icons.search_rounded),
                     suffixIcon: searchController.text.isNotEmpty
                         ? IconButton(
+                            tooltip: 'Xoá tìm kiếm',
                             icon: const Icon(Icons.clear_rounded),
                             onPressed: () {
                               searchController.clear();
@@ -154,38 +176,38 @@ class _MenuBody extends StatelessWidget {
                         : null,
                     filled: true,
                     fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
               sliver: SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 40,
+                  height: 42,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
                     itemCount: categories.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
-                      final cat = categories[index];
-                      final isSelected = cat == selectedCategory;
-                      return FilterChip(
-                        label: Text(cat),
+                      final category = categories[index];
+                      final isSelected = category == selectedCategory;
+                      return ChoiceChip(
+                        label: Text(category),
                         selected: isSelected,
-                        onSelected: (_) => onCategoryChanged(cat),
-                        selectedColor: theme.colorScheme.primary,
+                        onSelected: (_) => onCategoryChanged(category),
+                        selectedColor: Theme.of(context).colorScheme.primary,
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : null,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w800,
                         ),
                         backgroundColor: Colors.white,
-                        side: isSelected ? BorderSide.none : chipBorderSide,
+                        side: BorderSide(
+                          color: isSelected
+                              ? Colors.transparent
+                              : const Color(0xFFE7D3BD),
+                        ),
                       );
                     },
                   ),
@@ -193,30 +215,12 @@ class _MenuBody extends StatelessWidget {
               ),
             ),
             if (drinks.isEmpty)
-              SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.search_off_rounded,
-                          size: 56, color: Colors.grey[300]),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Không tìm thấy đồ uống',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Thử tìm với từ khóa khác',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
+              const SliverFillRemaining(
+                child: _EmptySearchView(),
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 sliver: SliverList.separated(
                   itemCount: drinks.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -229,28 +233,83 @@ class _MenuBody extends StatelessWidget {
                           builder: (_) => DetailsScreen(drink),
                         ),
                       ),
-                      onAddToCart: () {
-                        context.read<CartBloc>().add(
-                              AddToCartEvent(coffee: drink, quantity: 1),
-                            );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${drink.name} đã thêm vào giỏ hàng'),
-                            action: SnackBarAction(
-                              label: 'Xem giỏ',
-                              onPressed: () =>
-                                  Navigator.of(context).pushNamed('/cart'),
-                            ),
-                          ),
-                        );
-                      },
+                      onAddToCart: () => _addToCart(context, drink),
                     );
                   },
                 ),
               ),
-            const SliverPadding(padding: EdgeInsets.only(bottom: 20)),
           ],
         ),
+      ),
+    );
+  }
+
+  void _addToCart(BuildContext context, Coffee drink) {
+    context.read<CartBloc>().add(
+          AddToCartEvent(coffee: drink, quantity: 1),
+        );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Đã thêm ${drink.name} vào giỏ hàng'),
+        action: SnackBarAction(
+          label: 'Xem giỏ',
+          onPressed: () => Navigator.of(context).pushNamed('/cart'),
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuSummary extends StatelessWidget {
+  const _MenuSummary({
+    required this.totalDrinks,
+    required this.backendLabel,
+  });
+
+  final int totalDrinks;
+  final String backendLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2C1B16),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.local_cafe_rounded, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$totalDrinks món đang phục vụ',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                      ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  backendLabel,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -273,46 +332,47 @@ class _DrinkListTile extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(20),
       child: Ink(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(color: const Color(0xFFE7D3BD)),
         ),
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               child: CoffeeImage(
                 imagePath: drink.picture,
-                width: 92,
-                height: 92,
+                width: 84,
+                height: 84,
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(drink.name,
-                      style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
+                  Text(
+                    drink.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 5),
                   Text(
                     drink.tagline,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          height: 1.4,
+                          height: 1.35,
                         ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
+                  const SizedBox(height: 9),
+                  Row(
                     children: [
                       Text(
                         formatVnd(drink.discountedPrice),
@@ -326,27 +386,10 @@ class _DrinkListTile extends StatelessWidget {
                         Text(
                           formatVnd(drink.price),
                           style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    decoration: TextDecoration.lineThrough,
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Colors.grey,
+                                    decoration: TextDecoration.lineThrough,
                                   ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            '-${drink.discount}%',
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
-                          ),
                         ),
                       ],
                     ],
@@ -354,21 +397,68 @@ class _DrinkListTile extends StatelessWidget {
                 ],
               ),
             ),
-            InkWell(
-              onTap: onAddToCart,
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.add, color: Colors.white),
-              ),
+            const SizedBox(width: 10),
+            IconButton.filled(
+              onPressed: onAddToCart,
+              icon: const Icon(Icons.add_rounded),
+              tooltip: 'Thêm vào giỏ',
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EmptySearchView extends StatelessWidget {
+  const _EmptySearchView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search_off_rounded, size: 56, color: Colors.grey[300]),
+          const SizedBox(height: 12),
+          Text(
+            'Không tìm thấy món',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Thử đổi từ khoá hoặc nhóm món.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MenuErrorView extends StatelessWidget {
+  const _MenuErrorView({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.local_cafe_outlined, size: 48),
+          const SizedBox(height: 12),
+          Text(
+            'Không tải được thực đơn',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: onRetry,
+            child: const Text('Thử lại'),
+          ),
+        ],
       ),
     );
   }
