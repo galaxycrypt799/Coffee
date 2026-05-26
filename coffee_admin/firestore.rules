@@ -1,0 +1,160 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function validMembershipRank(rank) {
+      return rank in ['bronze', 'silver', 'gold', 'platinum'];
+    }
+
+    function validUserDocument(userId) {
+      return request.resource.data.keys().hasOnly([
+          'userId',
+          'email',
+          'name',
+          'hasActiveCart',
+          'membershipRank',
+          'totalSpent'
+        ])
+        && request.resource.data.userId == userId
+        && request.resource.data.email is string
+        && request.resource.data.name is string
+        && request.resource.data.hasActiveCart is bool
+        && validMembershipRank(request.resource.data.membershipRank)
+        && request.resource.data.totalSpent is number
+        && request.resource.data.totalSpent >= 0;
+    }
+
+    function ownerUserUpdateIsLimited() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name',
+          'hasActiveCart',
+          'membershipRank',
+          'totalSpent'
+        ])
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.email == resource.data.email
+        && validMembershipRank(request.resource.data.membershipRank)
+        && request.resource.data.totalSpent is number
+        && request.resource.data.totalSpent >= resource.data.totalSpent;
+    }
+
+    function validCoffeeDocument() {
+      return request.resource.data.keys().hasOnly([
+          'sortOrder',
+          'coffeeId',
+          'picture',
+          'name',
+          'tagline',
+          'description',
+          'category',
+          'origin',
+          'caffeineLevel',
+          'roastLevel',
+          'intensity',
+          'brewMinutes',
+          'volumeMl',
+          'rating',
+          'price',
+          'discount',
+          'tastingNotes',
+          'macros'
+        ])
+        && request.resource.data.coffeeId is string
+        && request.resource.data.name is string
+        && request.resource.data.price is number
+        && request.resource.data.price >= 0
+        && request.resource.data.discount is int
+        && request.resource.data.discount >= 0
+        && request.resource.data.discount <= 100;
+    }
+
+    function validOrderStatus(status) {
+      return status in [
+        'pending',
+        'confirmed',
+        'preparing',
+        'ready',
+        'delivered',
+        'completed',
+        'cancelled'
+      ];
+    }
+
+    function validOrderCreate(orderId) {
+      return request.resource.data.keys().hasOnly([
+          'id',
+          'orderId',
+          'userId',
+          'customerName',
+          'customerPhone',
+          'customerEmail',
+          'items',
+          'totalPrice',
+          'status',
+          'paymentMethod',
+          'createdAt',
+          'deliveryAddress',
+          'notes'
+        ])
+        && request.resource.data.id == orderId
+        && request.resource.data.orderId == orderId
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.customerName is string
+        && request.resource.data.customerPhone is string
+        && request.resource.data.customerEmail is string
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 50
+        && request.resource.data.totalPrice is number
+        && request.resource.data.totalPrice > 0
+        && request.resource.data.paymentMethod in ['cash', 'card', 'online']
+        && request.resource.data.createdAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && validUserDocument(userId);
+      allow update: if isAdmin() && validUserDocument(userId)
+        || isOwner(userId) && validUserDocument(userId) && ownerUserUpdateIsLimited();
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /coffees/{coffeeId} {
+      allow get, list: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.coffeeId == coffeeId
+        && validCoffeeDocument();
+      allow delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || isOwner(resource.data.userId);
+      allow create: if signedIn() && validOrderCreate(orderId);
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && validOrderStatus(request.resource.data.status);
+      allow delete: if isAdmin();
+    }
+  }
+}
