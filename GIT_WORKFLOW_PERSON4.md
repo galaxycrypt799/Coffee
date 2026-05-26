@@ -1,45 +1,58 @@
-# Person 4 - Nguyen Vuong - Auth/Profile, Admin Operations, PM
+# Person 4 - Nguyen Vuong - Auth, Profile va Admin Users
 
 Email: Vuong7411@gmail.com
-Vai tro: Dang nhap/dang ky/profile, Firebase Authentication, thong bao loi, admin operations, theo doi tien do.
 
-## Ket qua doi chieu GitHub voi workspace hien tai
+## Vai tro
 
-GitHub `main` co user repository va mot so man hinh auth/profile/admin, nhung nhieu BLoC auth van la TODO stub. Workspace hien tai da co auth flow, profile, Firebase/local repo, admin users/profile/revenue/upload day du hon.
+Nguyen Vuong phu trach dang nhap, dang ky, profile va cac chuc nang lien quan user trong admin.
 
-Ket luan: Nguyen Vuong nen tap trung kiem tra lai auth/profile theo workspace hien tai, viet validation/test va dong bo len GitHub qua PR. Phan PM can cap nhat tien do dua tren 4 file GitFlow nay.
+Pham vi chinh:
 
-## Branch phu trach
+- Customer Login, Register, Welcome, Profile.
+- AuthenticationBloc va sign in/sign up bloc.
+- Firebase/local user repository.
+- Admin login, splash, profile.
+- Admin users management, upload picture, revenue dashboard.
+
+## Branch su dung
+
+Branch goc khi lam viec:
 
 ```bash
 git checkout dev
 git pull origin dev
-git checkout -b fix/customer-auth-profile hoac feature/admin-users-management
 ```
 
-## File phu trach chinh
+Branch thuong dung:
+
+```bash
+git checkout -b fix/customer-auth-profile
+git checkout -b fix/admin-auth-revenue
+git checkout -b feature/admin-users-management
+```
+
+Dung `fix/...` khi sua flow da co, dung `feature/...` khi them man hinh hoac bloc moi.
+
+## File phu trach
 
 ### coffee_app
 
+- `lib/blocs/authentication_bloc/*`
+- `lib/screens/auth/blocs/sing_in_bloc/*`
+- `lib/screens/auth/blocs/sign_up_bloc/*`
 - `lib/screens/auth/views/sign_in_screen.dart`
 - `lib/screens/auth/views/sign_up_screen.dart`
 - `lib/screens/auth/views/welcome_screen.dart`
-- `lib/screens/auth/blocs/sing_in_bloc/*`
-- `lib/screens/auth/blocs/sign_up_bloc/*`
-- `lib/blocs/authentication_bloc/*` khi phoi hop Minh Tai
 - `lib/screens/profile/views/profile_screen.dart`
 - `lib/components/my_text_field.dart`
-- `packages/user_repository/lib/src/user_repo.dart`
-- `packages/user_repository/lib/src/firebase_user_repo.dart`
-- `packages/user_repository/lib/src/local_user_repo.dart`
-- `packages/user_repository/lib/src/models/user.dart`
-- `packages/user_repository/lib/src/entities/user_entity.dart`
+- `lib/components/macro.dart`
+- `packages/user_repository/*`
 
 ### coffee_admin
 
-- `lib/src/modules/auth/views/login_screen.dart`
-- `lib/src/modules/auth/blocs/sing_in_bloc/*`
-- `lib/src/blocs/authentication_bloc/*` khi phoi hop Minh Tai
+- `lib/src/blocs/authentication_bloc/*`
+- `lib/src/modules/auth/*`
+- `lib/src/modules/splash/views/splash_screen.dart`
 - `lib/src/modules/operations/views/profile_screen.dart`
 - `lib/src/modules/operations/views/users_screen.dart`
 - `lib/src/modules/operations/blocs/users_list_bloc/*`
@@ -47,62 +60,31 @@ git checkout -b fix/customer-auth-profile hoac feature/admin-users-management
 - `lib/src/modules/operations/views/revenue_bloc.dart`
 - `lib/src/modules/operations/views/revenue_event.dart`
 - `lib/src/modules/operations/views/revenue_state.dart`
+- `lib/src/components/my_text_field.dart`
 - `lib/src/modules/operations/components/macro.dart`
 - `lib/src/utils/price_formatter.dart`
+- `packages/user_repository/*`
 
-## Viec can lam tiep
+## Commit mau
 
-- [ ] Kiem tra lai login/register customer voi Firebase va local fallback.
-- [ ] Map FirebaseAuthException sang thong bao tieng Viet ro rang.
-- [ ] Validate email, password, ten, so dien thoai.
-- [ ] Hoan thien profile customer: thong tin tai khoan, backend mode, dang xuat, shortcut order history.
-- [ ] Hoan thien admin login va users/profile neu dung vai tro admin.
-- [ ] Kiem tra update user spent/loyalty sau checkout voi Person 3.
-- [ ] Kiem tra upload image: validate file rong, content type, preview, loi Firebase Storage.
-- [ ] Kiem tra dashboard revenue doc dung schema order cua Person 3.
-- [ ] Cap nhat tien do hang ngay trong checklist/PR description.
+- `Update customer user repository implementation`
+- `Update customer authentication bloc`
+- `Update customer sign in and sign up blocs`
+- `Update customer login register and welcome screens`
+- `Update customer profile and shared form components`
+- `Update admin authentication login and splash flow`
+- `Update admin coffee image upload bloc`
+- `Update admin profile and revenue dashboard logic`
+- `Add admin users list bloc`
+- `Add admin users management screen`
 
-## Commit plan theo file
+## Checklist test
 
-| File/Pham vi | Commit message |
-|---|---|
-| customer sign-in/sign-up bloc | `feat(auth): implement customer sign in and sign up blocs` |
-| customer auth views | `feat(auth): complete customer login and register screens` |
-| Firebase/local user repo | `feat(auth): connect Firebase and local user repositories` |
-| auth error handling | `fix(auth): show readable Firebase auth errors` |
-| profile customer | `feat(profile): complete customer account screen` |
-| admin login bloc/view | `feat(admin-auth): implement admin login flow` |
-| admin users/profile | `feat(admin-users): add user management profile view` |
-| upload picture bloc | `feat(admin-media): handle coffee image uploads` |
-| revenue bloc/state | `feat(admin-revenue): calculate dashboard revenue stats` |
-| PM docs/checklist | `docs: update team progress checklist` |
-
-## Quy tac phoi hop
-
-- Auth/global state dung chung voi Minh Tai, khong doi contract `AuthenticationState` ma khong bao.
-- User model co lien quan checkout loyalty/spent cua Person 3.
-- Revenue doc order schema cua Person 3, khong tu them field khac neu chua thong nhat.
-- Product image upload lien quan Create Coffee cua Person 2.
-
-## Lenh lam viec
-
-```bash
-git checkout dev
-git pull origin dev
-git checkout -b fix/customer-auth-profile hoac feature/admin-users-management
-
-flutter analyze
-flutter test
-
-git add coffee_app/lib/screens/auth coffee_app/lib/screens/profile coffee_app/packages/user_repository
-git commit -m "feat(auth): complete customer login and register screens"
-git push -u origin fix/customer-auth-profile hoac feature/admin-users-management
-```
-
-## Checklist PM hang ngay
-
-- [ ] Moi nguoi co branch rieng tu `dev`.
-- [ ] Moi PR co mo ta, screenshot neu la UI, va checklist test.
-- [ ] Minh Tai review/merge, khong merge thang vao `main`.
-- [ ] Theo doi blockers: Firebase config, conflict schema order/user, UI overflow, build Android/Web.
-- [ ] Cuoi ngay tong hop: commit da co, PR dang cho review, loi can sua.
+- [ ] Login/register validate email va password.
+- [ ] Loi Firebase hien thong bao de hieu.
+- [ ] Local fallback khong lam app crash khi Firebase loi.
+- [ ] Profile hien dung thong tin user va dang xuat duoc.
+- [ ] Admin login dieu huong dung vao dashboard.
+- [ ] Upload anh co loading/error state.
+- [ ] Revenue dashboard dung schema order cua Kim Ngan.
+- [ ] Neu sua user model, bao Minh Tai va Kim Ngan de kiem tra checkout.
