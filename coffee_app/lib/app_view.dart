@@ -148,9 +148,11 @@ class _AppNavigatorState extends State<_AppNavigator> {
             final userId =
                 context.read<AuthenticationBloc>().state.user?.userId ?? '';
             context.read<OrderHistoryCubit>().loadOrders(userId);
+            final filter =
+                args is OrderHistoryFilter ? args : OrderHistoryFilter.all;
             return MaterialPageRoute(
               settings: settings,
-              builder: (_) => const OrderHistoryScreen(),
+              builder: (_) => OrderHistoryScreen(initialFilter: filter),
             );
           case '/profile':
             return MaterialPageRoute(
