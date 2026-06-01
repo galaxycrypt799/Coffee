@@ -20,10 +20,11 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final firstName = context.select((AuthenticationBloc bloc) {
       final name = bloc.state.user?.name ?? '';
-      if (name.trim().isEmpty) {
+      final trimmedName = name.trim();
+      if (trimmedName.isEmpty) {
         return 'Bạn';
       }
-      return name.trim().split(' ').first;
+      return trimmedName.split(RegExp(r'\s+')).last;
     });
 
     return Scaffold(
@@ -56,7 +57,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _CoffeeHomeBody extends StatelessWidget {
+class _CoffeeHomeBody extends StatefulWidget {
   const _CoffeeHomeBody({
     required this.userName,
     required this.coffees,
@@ -68,12 +69,28 @@ class _CoffeeHomeBody extends StatelessWidget {
   final VoidCallback? onOpenMenu;
 
   @override
+  State<_CoffeeHomeBody> createState() => _CoffeeHomeBodyState();
+}
+
+class _CoffeeHomeBodyState extends State<_CoffeeHomeBody> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final featuredCoffees = coffees.take(3).toList(growable: false);
-    final popularCoffees = coffees.length > 3
-        ? coffees.skip(3).take(5).toList(growable: false)
-        : coffees.take(5).toList(growable: false);
-    final categories = coffees
+    final hasSearch = _searchQuery.trim().isNotEmpty;
+    final searchResults = _filterCoffees(widget.coffees);
+    final featuredCoffees = widget.coffees.take(3).toList(growable: false);
+    final popularCoffees = widget.coffees.length > 3
+        ? widget.coffees.skip(3).take(5).toList(growable: false)
+        : widget.coffees.take(5).toList(growable: false);
+    final categories = widget.coffees
         .map((coffee) => coffee.category)
         .where((category) => category.trim().isNotEmpty)
         .toSet()
@@ -98,49 +115,80 @@ class _CoffeeHomeBody extends StatelessWidget {
               delegate: SliverChildListDelegate(
                 [
                   _TopBar(
-                    userName: userName,
+                    userName: widget.userName,
+                  ),
+                  const SizedBox(height: 16),
+                  _HomeSearchField(
+                    controller: _searchController,
+                    onChanged: (query) {
+                      setState(() => _searchQuery = query);
+                    },
+                    onClear: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                    },
                   ),
                   const SizedBox(height: 18),
-                  _HeroPanel(
-                    onOrderNow: onOpenMenu,
-                  ),
-                  const SizedBox(height: 20),
-                  _CategoryStrip(categories: categories),
-                  const SizedBox(height: 24),
-                  _SectionHeader(
-                    title: 'Gợi ý hôm nay',
-                    actionLabel: 'Xem menu',
-                    onAction: onOpenMenu,
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    height: 304,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: featuredCoffees.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 14),
-                      itemBuilder: (context, index) {
-                        final coffee = featuredCoffees[index];
-                        return CoffeeCard(
-                          coffee: coffee,
-                          onTap: () => _openDetails(context, coffee),
-                        );
-                      },
+                  if (hasSearch) ...[
+                    _SectionHeader(
+                      title: 'Kết quả tìm kiếm',
+                      actionLabel: '${searchResults.length} món',
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  const _SectionHeader(title: 'Món phổ biến'),
-                  const SizedBox(height: 12),
-                  ...popularCoffees.map(
-                    (coffee) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _CoffeeListTile(
-                        coffee: coffee,
-                        onTap: () => _openDetails(context, coffee),
+                    const SizedBox(height: 12),
+                    if (searchResults.isEmpty)
+                      const _HomeSearchEmptyView()
+                    else
+                      ...searchResults.map(
+                        (coffee) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _CoffeeListTile(
+                            coffee: coffee,
+                            onTap: () => _openDetails(context, coffee),
+                          ),
+                        ),
+                      ),
+                  ] else ...[
+                    _HeroPanel(
+                      onOrderNow: widget.onOpenMenu,
+                    ),
+                    const SizedBox(height: 20),
+                    _CategoryStrip(categories: categories),
+                    const SizedBox(height: 24),
+                    _SectionHeader(
+                      title: 'Gợi ý hôm nay',
+                      actionLabel: 'Xem menu',
+                      onAction: widget.onOpenMenu,
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      height: 304,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: featuredCoffees.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 14),
+                        itemBuilder: (context, index) {
+                          final coffee = featuredCoffees[index];
+                          return CoffeeCard(
+                            coffee: coffee,
+                            onTap: () => _openDetails(context, coffee),
+                          );
+                        },
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 24),
+                    const _SectionHeader(title: 'Món phổ biến'),
+                    const SizedBox(height: 12),
+                    ...popularCoffees.map(
+                      (coffee) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _CoffeeListTile(
+                          coffee: coffee,
+                          onTap: () => _openDetails(context, coffee),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -148,6 +196,42 @@ class _CoffeeHomeBody extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  List<Coffee> _filterCoffees(List<Coffee> coffees) {
+    final query = _normalizeSearchText(_searchQuery);
+    if (query.isEmpty) {
+      return coffees;
+    }
+
+    return coffees.where((coffee) {
+      final searchableText = _normalizeSearchText(
+        [
+          coffee.name,
+          coffee.tagline,
+          coffee.description,
+          coffee.category,
+          coffee.origin,
+          coffee.caffeineLevel,
+          coffee.tastingNotes.join(' '),
+        ].join(' '),
+      );
+
+      return searchableText.contains(query);
+    }).toList(growable: false);
+  }
+
+  String _normalizeSearchText(String value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp('[àáạảãâầấậẩẫăằắặẳẵ]'), 'a')
+        .replaceAll(RegExp('[èéẹẻẽêềếệểễ]'), 'e')
+        .replaceAll(RegExp('[ìíịỉĩ]'), 'i')
+        .replaceAll(RegExp('[òóọỏõôồốộổỗơờớợởỡ]'), 'o')
+        .replaceAll(RegExp('[ùúụủũưừứựửữ]'), 'u')
+        .replaceAll(RegExp('[ỳýỵỷỹ]'), 'y')
+        .replaceAll('đ', 'd');
   }
 
   void _openDetails(BuildContext context, Coffee coffee) {
@@ -224,6 +308,40 @@ class _TopBarAction extends StatelessWidget {
           ),
           child: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
         ),
+      ),
+    );
+  }
+}
+
+class _HomeSearchField extends StatelessWidget {
+  const _HomeSearchField({
+    required this.controller,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: 'Tìm món, hương vị, loại cà phê...',
+        prefixIcon: const Icon(Icons.search_rounded),
+        suffixIcon: controller.text.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Xóa tìm kiếm',
+                onPressed: onClear,
+                icon: const Icon(Icons.clear_rounded),
+              ),
+        filled: true,
+        fillColor: Colors.white,
       ),
     );
   }
@@ -378,11 +496,18 @@ class _SectionHeader extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
-        if (actionLabel != null && onAction != null)
-          TextButton(
-            onPressed: onAction,
-            child: Text(actionLabel!),
-          ),
+        if (actionLabel != null)
+          onAction == null
+              ? Text(
+                  actionLabel!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                )
+              : TextButton(
+                  onPressed: onAction,
+                  child: Text(actionLabel!),
+                ),
       ],
     );
   }
@@ -491,6 +616,33 @@ class _MiniChip extends StatelessWidget {
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.w800,
             ),
+      ),
+    );
+  }
+}
+
+class _HomeSearchEmptyView extends StatelessWidget {
+  const _HomeSearchEmptyView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(Icons.search_off_rounded, size: 56, color: Colors.grey[300]),
+          const SizedBox(height: 12),
+          Text(
+            'Không tìm thấy món',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Thử đổi từ khóa hoặc xem toàn bộ menu.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
       ),
     );
   }
