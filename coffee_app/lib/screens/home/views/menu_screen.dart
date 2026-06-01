@@ -1,4 +1,3 @@
-import 'package:coffee_app/app_bootstrap.dart';
 import 'package:coffee_app/components/coffee_image.dart';
 import 'package:coffee_app/screens/home/blocs/cart_bloc/cart_bloc.dart';
 import 'package:coffee_app/screens/home/blocs/get_coffee_bloc/get_coffee_bloc.dart';
@@ -10,11 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({
-    required this.bootstrap,
     super.key,
   });
-
-  final AppBootstrap bootstrap;
 
   @override
   State<MenuScreen> createState() => _MenuScreenState();
@@ -53,7 +49,6 @@ class _MenuScreenState extends State<MenuScreen> {
           final filtered = _filterDrinks(drinks);
 
           return _MenuBody(
-            bootstrap: widget.bootstrap,
             drinks: filtered,
             totalDrinks: drinks.length,
             categories: categories,
@@ -102,7 +97,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
 class _MenuBody extends StatelessWidget {
   const _MenuBody({
-    required this.bootstrap,
     required this.drinks,
     required this.totalDrinks,
     required this.categories,
@@ -112,7 +106,6 @@ class _MenuBody extends StatelessWidget {
     required this.onSearchChanged,
   });
 
-  final AppBootstrap bootstrap;
   final List<Coffee> drinks;
   final int totalDrinks;
   final List<String> categories;
@@ -151,7 +144,6 @@ class _MenuBody extends StatelessWidget {
               sliver: SliverToBoxAdapter(
                 child: _MenuSummary(
                   totalDrinks: totalDrinks,
-                  backendLabel: bootstrap.statusTitle,
                 ),
               ),
             ),
@@ -263,11 +255,9 @@ class _MenuBody extends StatelessWidget {
 class _MenuSummary extends StatelessWidget {
   const _MenuSummary({
     required this.totalDrinks,
-    required this.backendLabel,
   });
 
   final int totalDrinks;
-  final String backendLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -297,13 +287,6 @@ class _MenuSummary extends StatelessWidget {
                   '$totalDrinks món đang phục vụ',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
-                      ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  backendLabel,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white70,
                       ),
                 ),
               ],

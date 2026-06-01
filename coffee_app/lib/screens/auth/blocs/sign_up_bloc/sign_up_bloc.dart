@@ -33,7 +33,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         case 'weak-password':
           return 'Mật khẩu còn yếu, hãy tăng độ mạnh.';
         case 'network-request-failed':
-          return 'Không thể kết nối mạng để tạo tài khoản Firebase.';
+          return 'Không thể kết nối mạng để tạo tài khoản.';
       }
     }
 

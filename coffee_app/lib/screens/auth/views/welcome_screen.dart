@@ -161,11 +161,6 @@ class WelcomeScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 18),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: _BackendStatusCard(bootstrap: bootstrap),
-                          ),
-                          const SizedBox(height: 16),
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 20),
                             decoration: BoxDecoration(
@@ -265,81 +260,6 @@ class _BenefitChip extends StatelessWidget {
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BackendStatusCard extends StatelessWidget {
-  const _BackendStatusCard({
-    required this.bootstrap,
-  });
-
-  final AppBootstrap bootstrap;
-
-  @override
-  Widget build(BuildContext context) {
-    final accentColor = bootstrap.usesFirebase
-        ? Theme.of(context).colorScheme.tertiary
-        : Theme.of(context).colorScheme.secondary;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6D3BF)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: accentColor.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              bootstrap.usesFirebase
-                  ? Icons.cloud_done_outlined
-                  : Icons.layers_outlined,
-              color: accentColor,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  bootstrap.statusTitle,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  bootstrap.statusMessage,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        height: 1.45,
-                      ),
-                ),
-                if (bootstrap.warning != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    bootstrap.warning!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF8D3A23),
-                          fontWeight: FontWeight.w700,
-                        ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
-            ),
           ),
         ],
       ),
