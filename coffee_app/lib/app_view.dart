@@ -78,7 +78,7 @@ class _MyAppViewState extends State<MyAppView> {
               : BlocBuilder<AuthenticationBloc, AuthenticationState>(
                   builder: (context, state) {
                     if (state.status == AuthenticationStatus.authenticated) {
-                      return _AppNavigator(bootstrap: widget.bootstrap);
+                      return const _AppNavigator();
                     }
                     return WelcomeScreen(bootstrap: widget.bootstrap);
                   },
@@ -101,9 +101,7 @@ class _StartupScreen extends StatelessWidget {
 }
 
 class _AppNavigator extends StatefulWidget {
-  final AppBootstrap bootstrap;
-
-  const _AppNavigator({required this.bootstrap});
+  const _AppNavigator();
 
   @override
   State<_AppNavigator> createState() => _AppNavigatorState();
@@ -125,7 +123,6 @@ class _AppNavigatorState extends State<_AppNavigator> {
             return MaterialPageRoute(
               settings: settings,
               builder: (_) => MainScreen(
-                bootstrap: widget.bootstrap,
                 initialIndex: initialIndex,
               ),
             );
@@ -158,9 +155,7 @@ class _AppNavigatorState extends State<_AppNavigator> {
           case '/profile':
             return MaterialPageRoute(
               settings: settings,
-              builder: (_) => ProfileScreen(
-                backendLabel: widget.bootstrap.statusTitle,
-              ),
+              builder: (_) => const ProfileScreen(),
             );
           default:
             return _errorRoute();
