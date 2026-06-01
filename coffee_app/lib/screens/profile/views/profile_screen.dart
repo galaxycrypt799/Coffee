@@ -6,11 +6,8 @@ import '../../orders/cubit/order_history_cubit.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({
-    required this.backendLabel,
     super.key,
   });
-
-  final String backendLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -68,24 +65,6 @@ class ProfileScreen extends StatelessWidget {
                               Text(
                                 user?.email ?? '',
                                 style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              const SizedBox(height: 10),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF5EBDE),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  backendLabel,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(fontWeight: FontWeight.w700),
-                                ),
                               ),
                             ],
                           ),

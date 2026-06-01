@@ -35,9 +35,9 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
         case 'invalid-email':
           return 'Email hoặc mật khẩu chưa đúng.';
         case 'user-disabled':
-          return 'Tài khoản này đã bị vô hiệu hóa trên Firebase Auth.';
+          return 'Tài khoản này đã bị vô hiệu hóa.';
         case 'network-request-failed':
-          return 'Không thể kết nối mạng để đăng nhập Firebase.';
+          return 'Không thể kết nối mạng để đăng nhập.';
       }
     }
 

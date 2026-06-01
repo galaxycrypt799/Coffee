@@ -42,11 +42,6 @@ class _SignInScreenState extends State<SignInScreen> {
     ).hasMatch(value);
   }
 
-  void _fillDemoAccount() {
-    emailController.text = 'demo@coffeeapp.vn';
-    passwordController.text = 'CoffeeApp@123';
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -76,11 +71,6 @@ class _SignInScreenState extends State<SignInScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _ModeNote(
-              usesFirebase: widget.usesFirebase,
-              onUseDemo: widget.usesFirebase ? null : _fillDemoAccount,
-            ),
-            const SizedBox(height: 20),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
@@ -240,80 +230,6 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ModeNote extends StatelessWidget {
-  const _ModeNote({
-    required this.usesFirebase,
-    this.onUseDemo,
-  });
-
-  final bool usesFirebase;
-  final VoidCallback? onUseDemo;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE8D7C3)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: colorScheme.secondary.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              usesFirebase ? Icons.cloud_outlined : Icons.auto_awesome_rounded,
-              color: colorScheme.primary,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  usesFirebase ? 'Đang dùng Firebase Auth' : 'Tài khoản demo',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  usesFirebase
-                      ? 'Email và mật khẩu sẽ xác thực trực tiếp với Firebase.'
-                      : 'Email: demo@coffeeapp.vn\nMật khẩu: CoffeeApp@123',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        height: 1.45,
-                      ),
-                ),
-                if (onUseDemo != null) ...[
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: onUseDemo,
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text('Điền sẵn tài khoản demo'),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
