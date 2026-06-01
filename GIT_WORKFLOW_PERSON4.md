@@ -1,6 +1,6 @@
 # Person 4 - Nguyen Vuong - Auth, Profile va Admin Users
 
-Email: Vuong7411@gmail.com
+Email: NguyenVuongg@gmail.com
 
 ## Vai tro
 
