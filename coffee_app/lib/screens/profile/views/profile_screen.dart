@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../blocs/authentication_bloc/authentication_bloc.dart';
+import '../../../utils/price_formatter.dart';
 import '../../orders/cubit/order_history_cubit.dart';
+import '../../orders/views/order_history_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({
@@ -21,8 +23,14 @@ class ProfileScreen extends StatelessWidget {
           ),
           body: BlocBuilder<OrderHistoryCubit, OrderHistoryState>(
             builder: (context, state) {
-              final totalSpent = user?.totalSpent ?? 0.0;
-              final memberRank = _MemberRank.fromTotalSpent(totalSpent);
+              final completedOrders = state.orders
+                  .where((order) => order.countsTowardSpending)
+                  .toList(growable: false);
+              final completedTotal = completedOrders.fold<double>(
+                0,
+                (sum, order) => sum + order.totalPrice,
+              );
+              final memberRank = _MemberRank.fromTotalSpent(completedTotal);
 
               return ListView(
                 padding: const EdgeInsets.all(20),
@@ -80,15 +88,17 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _MetricCard(
-                          label: 'Đơn đã tạo',
-                          value: '${state.orders.length}',
+                          label: 'Đơn hoàn thành',
+                          value: '${completedOrders.length}',
+                          onTap: () => _openCompletedOrders(context),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _MetricCard(
                           label: 'Tổng chi',
-                          value: '${totalSpent.toStringAsFixed(0)}đ',
+                          value: formatVnd(completedTotal),
+                          onTap: () => _openCompletedOrders(context),
                         ),
                       ),
                     ],
@@ -122,6 +132,13 @@ class ProfileScreen extends StatelessWidget {
       },
     );
   }
+
+  void _openCompletedOrders(BuildContext context) {
+    Navigator.of(context).pushNamed(
+      '/orders',
+      arguments: OrderHistoryFilter.completed,
+    );
+  }
 }
 
 class _MemberRank {
@@ -136,21 +153,21 @@ class _MemberRank {
   final IconData icon;
 
   factory _MemberRank.fromTotalSpent(double totalSpent) {
-    if (totalSpent >= 2000000) {
+    if (totalSpent >= 10000000) {
       return const _MemberRank(
-        label: 'Kim cương',
+        label: 'Bạch kim',
         color: Color(0xFF5A6FD8),
         icon: Icons.diamond_outlined,
       );
     }
-    if (totalSpent >= 1000000) {
+    if (totalSpent >= 3000000) {
       return const _MemberRank(
         label: 'Vàng',
         color: Color(0xFFC48322),
         icon: Icons.workspace_premium_rounded,
       );
     }
-    if (totalSpent >= 500000) {
+    if (totalSpent >= 1000000) {
       return const _MemberRank(
         label: 'Bạc',
         color: Color(0xFF6B7280),
@@ -204,27 +221,43 @@ class _MetricCard extends StatelessWidget {
   const _MetricCard({
     required this.label,
     required this.value,
+    this.onTap,
   });
 
   final String label;
   final String value;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE7D3BD)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 8),
-          Text(value, style: Theme.of(context).textTheme.titleLarge),
-        ],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Ink(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: const Color(0xFFE7D3BD)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                if (onTap != null) const Icon(Icons.chevron_right_rounded),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
