@@ -22,6 +22,7 @@ class ProfileScreen extends StatelessWidget {
           body: BlocBuilder<OrderHistoryCubit, OrderHistoryState>(
             builder: (context, state) {
               final totalSpent = user?.totalSpent ?? 0.0;
+              final memberRank = _MemberRank.fromTotalSpent(totalSpent);
 
               return ListView(
                 padding: const EdgeInsets.all(20),
@@ -66,6 +67,8 @@ class ProfileScreen extends StatelessWidget {
                                 user?.email ?? '',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
+                              const SizedBox(height: 10),
+                              _MemberRankChip(rank: memberRank),
                             ],
                           ),
                         ),
@@ -117,6 +120,82 @@ class ProfileScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _MemberRank {
+  const _MemberRank({
+    required this.label,
+    required this.color,
+    required this.icon,
+  });
+
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  factory _MemberRank.fromTotalSpent(double totalSpent) {
+    if (totalSpent >= 2000000) {
+      return const _MemberRank(
+        label: 'Kim cương',
+        color: Color(0xFF5A6FD8),
+        icon: Icons.diamond_outlined,
+      );
+    }
+    if (totalSpent >= 1000000) {
+      return const _MemberRank(
+        label: 'Vàng',
+        color: Color(0xFFC48322),
+        icon: Icons.workspace_premium_rounded,
+      );
+    }
+    if (totalSpent >= 500000) {
+      return const _MemberRank(
+        label: 'Bạc',
+        color: Color(0xFF6B7280),
+        icon: Icons.military_tech_rounded,
+      );
+    }
+    return const _MemberRank(
+      label: 'Đồng',
+      color: Color(0xFF9A5B2E),
+      icon: Icons.local_cafe_rounded,
+    );
+  }
+}
+
+class _MemberRankChip extends StatelessWidget {
+  const _MemberRankChip({required this.rank});
+
+  final _MemberRank rank;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: rank.color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: rank.color.withValues(alpha: 0.24)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(rank.icon, size: 16, color: rank.color),
+            const SizedBox(width: 6),
+            Text(
+              'Hạng ${rank.label}',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: rank.color,
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
