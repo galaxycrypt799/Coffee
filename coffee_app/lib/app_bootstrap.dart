@@ -15,18 +15,12 @@ class AppBootstrap {
     required this.coffeeRepository,
     required this.orderRepository,
     required this.backendMode,
-    required this.statusTitle,
-    required this.statusMessage,
-    this.warning,
   });
 
   final UserRepository userRepository;
   final CoffeeRepo coffeeRepository;
   final OrderRepository orderRepository;
   final BackendMode backendMode;
-  final String statusTitle;
-  final String statusMessage;
-  final String? warning;
 
   bool get usesFirebase => backendMode == BackendMode.firebase;
 
@@ -41,9 +35,6 @@ class AppBootstrap {
         coffeeRepository: FirebaseCoffeeRepo(),
         orderRepository: FirebaseOrderRepository(),
         backendMode: BackendMode.firebase,
-        statusTitle: 'Online',
-        statusMessage:
-            'Tài khoản và thực đơn đang được đồng bộ hóa trực tiếp từ hệ thống Coffee App.',
       );
     } catch (error, stackTrace) {
       log(
@@ -52,26 +43,16 @@ class AppBootstrap {
         stackTrace: stackTrace,
       );
 
-      return _local(
-        statusMessage:
-            'Không thể kết nối máy chủ. App đã tự động chuyển sang chế độ hoạt động ngoại tuyến.',
-        warning: error.toString(),
-      );
+      return _local();
     }
   }
 
-  static AppBootstrap _local({
-    required String statusMessage,
-    String? warning,
-  }) {
+  static AppBootstrap _local() {
     return AppBootstrap._(
       userRepository: LocalUserRepo(),
       coffeeRepository: const LocalCoffeeRepo(),
       orderRepository: LocalOrderRepository(),
       backendMode: BackendMode.local,
-      statusTitle: 'Offline',
-      statusMessage: statusMessage,
-      warning: warning,
     );
   }
 }

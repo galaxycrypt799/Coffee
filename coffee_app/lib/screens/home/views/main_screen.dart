@@ -1,4 +1,3 @@
-import 'package:coffee_app/app_bootstrap.dart';
 import 'package:coffee_app/blocs/authentication_bloc/authentication_bloc.dart';
 import 'package:coffee_app/screens/home/views/home_screen.dart';
 import 'package:coffee_app/screens/orders/cubit/order_history_cubit.dart';
@@ -11,7 +10,6 @@ import 'menu_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({
-    required this.bootstrap,
     this.initialIndex = homeTabIndex,
     super.key,
   });
@@ -19,7 +17,6 @@ class MainScreen extends StatefulWidget {
   static const int homeTabIndex = 0;
   static const int activityTabIndex = 2;
 
-  final AppBootstrap bootstrap;
   final int initialIndex;
 
   @override
@@ -36,12 +33,11 @@ class _MainScreenState extends State<MainScreen> {
     _selectedIndex = widget.initialIndex.clamp(0, 3);
     _pages = [
       HomeScreen(
-        bootstrap: widget.bootstrap,
         onOpenMenu: () => _onItemTapped(1),
       ),
-      MenuScreen(bootstrap: widget.bootstrap),
+      const MenuScreen(),
       const OrderHistoryScreen(),
-      ProfileScreen(backendLabel: widget.bootstrap.statusTitle),
+      const ProfileScreen(),
     ];
     if (_selectedIndex == MainScreen.activityTabIndex) {
       _loadOrders();
