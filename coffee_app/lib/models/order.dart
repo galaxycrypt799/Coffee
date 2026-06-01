@@ -156,10 +156,30 @@ class Order {
         return 'Sẵn sàng lấy';
       case 'delivered':
         return 'Đã giao';
+      case 'completed':
+        return 'Hoàn thành';
       case 'cancelled':
         return 'Đã hủy';
       default:
         return status;
+    }
+  }
+
+  bool get countsTowardSpending {
+    final normalizedStatus = status.trim().toLowerCase();
+    return normalizedStatus == 'delivered' || normalizedStatus == 'completed';
+  }
+
+  String get paymentMethodDisplay {
+    switch (paymentMethod.trim().toLowerCase()) {
+      case 'cash':
+        return 'Tiền mặt';
+      case 'card':
+        return 'Thẻ';
+      case 'online':
+        return 'Thanh toán online';
+      default:
+        return paymentMethod;
     }
   }
 }
