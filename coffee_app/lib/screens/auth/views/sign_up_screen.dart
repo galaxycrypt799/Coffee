@@ -92,15 +92,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 'Tạo tài khoản mới',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              const SizedBox(height: 8),
-              Text(
-                widget.usesFirebase
-                    ? 'Tài khoản sẽ lưu ở Firebase Auth và collection users để bạn tiếp tục mở rộng app.'
-                    : 'Tài khoản sẽ lưu local để bạn test flow ngay cả khi chưa cấu hình Firebase.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      height: 1.5,
-                    ),
-              ),
               const SizedBox(height: 20),
               MyTextField(
                 controller: nameController,
