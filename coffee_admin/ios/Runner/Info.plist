@@ -22,6 +22,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Coffee Admin cần quyền chọn ảnh để upload hình đồ uống lên Firebase Storage.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Coffee Admin cần quyền camera nếu bạn chọn chụp ảnh đồ uống để upload.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
